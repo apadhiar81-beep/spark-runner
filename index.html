@@ -138,15 +138,41 @@
     <button class="breathe-skip" id="breatheSkip">Skip (−20 XP)</button>
   </div>
 
-  <!-- GAME OVER SCREEN -->
+  <!-- CRASH CHECK-IN SCREEN -->
 
-  <div class="screen hidden" id="gameoverScreen">
-    <div class="go-title">CRASHED</div>
-    <div class="go-score" id="goScore">0m</div>
-    <div class="go-xp" id="goXP">+0 XP earned</div>
-    <div class="go-insight" id="goInsight"></div>
-    <button class="btn-primary" id="retryBtn">RUN AGAIN</button>
-    <button class="btn-secondary" id="menuBtn" style="margin-top:12px;">Main Menu</button>
+  <div class="screen hidden" id="gameoverScreen" style="background:#04060f;padding:0;">
+
+```
+<!-- STEP 1: CRASH -->
+<div id="crashStep1" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:32px 24px;">
+  <div style="font-size:72px;animation:crashBounce 0.6s ease;">💥</div>
+  <div class="go-title" id="crashTitle">YOU CRASHED</div>
+  <div style="font-size:14px;color:#6b7fa8;text-align:center;line-height:1.7;max-width:280px;" id="crashDist"></div>
+  <div style="background:#111828;border-radius:20px;padding:18px 22px;max-width:300px;border:1px solid #ffffff10;text-align:center;">
+    <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:#fbbf24;letter-spacing:3px;margin-bottom:10px;">BEFORE YOU RUN AGAIN</div>
+    <div style="font-size:15px;color:#e8f0ff;line-height:1.7;">Take a breath. Crashes happen.<br>Let's figure out what your brain needs.</div>
+  </div>
+  <button class="btn-primary" id="crashCheckInBtn" style="margin-top:8px;">Check In 🧠</button>
+</div>
+
+<!-- STEP 2: QUICK SNAP CHECK-IN -->
+<div id="crashStep2" style="display:none;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:14px;padding:28px 20px;">
+  <div style="font-family:'Orbitron',sans-serif;font-size:12px;color:#fbbf24;letter-spacing:4px;">RIGHT NOW I FEEL...</div>
+  <div style="font-size:13px;color:#6b7fa8;margin-bottom:4px;">Tap the word that fits best</div>
+  <div id="crashSnapWords" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:360px;"></div>
+</div>
+
+<!-- STEP 3: INSIGHT + RETRY -->
+<div id="crashStep3" style="display:none;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:32px 24px;">
+  <div style="font-size:52px;" id="crashStateEmoji">🌊</div>
+  <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:900;" id="crashStateLabel">IN THE FLOW</div>
+  <div style="background:#111828;border-radius:20px;padding:18px 22px;max-width:300px;border:1px solid #ffffff15;font-size:14px;color:#94a3b8;line-height:1.8;text-align:center;" id="crashInsight"></div>
+  <div style="font-family:'Orbitron',sans-serif;font-size:13px;" id="crashXPEarned"></div>
+  <button class="btn-primary" id="retryBtn">RUN AGAIN ⚡</button>
+  <button class="btn-secondary" id="menuBtn">Main Menu</button>
+</div>
+```
+
   </div>
 
 </div>
@@ -183,11 +209,11 @@ const HERO_X = Math.round(W * 0.19);
 });
 
 const BIOMES = {
-  rocket: { name:"ROCKET MODE", color:"#ff6b6b", sky1:"#1a0505", sky2:"#2d0a0a", ground:"#3d1010", accent:"#ff4444", speed:8, label:"⚡ ROCKET", particleColor:"#ff6b6b" },
-  buzz:   { name:"BUZZING",     color:"#fbbf24", sky1:"#1a1000", sky2:"#2a1800", ground:"#3a2000", accent:"#f59e0b", speed:6.5, label:"⚡ BUZZ", particleColor:"#fbbf24" },
-  flow:   { name:"IN THE FLOW", color:"#2de8cc", sky1:"#041218", sky2:"#04101a", ground:"#0a2030", accent:"#0891b2", speed:5, label:"🌊 FLOW", particleColor:"#2de8cc" },
-  foggy:  { name:"FOGGY",       color:"#94a3b8", sky1:"#0a0c10", sky2:"#0d1018", ground:"#1a1e28", accent:"#475569", speed:3.5, label:"🌫 FOGGY", particleColor:"#94a3b8" },
-  stuck:  { name:"STUCK",       color:"#a78bfa", sky1:"#0a0414", sky2:"#120820", ground:"#1e1040", accent:"#6d28d9", speed:2.5, label:"🪨 STUCK", particleColor:"#a78bfa" },
+  rocket: { name:"ROCKET MODE", emoji:"🚀", color:"#ff6b6b", sky1:"#1a0505", sky2:"#2d0a0a", ground:"#3d1010", accent:"#ff4444", speed:8,   label:"⚡ ROCKET", particleColor:"#ff6b6b" },
+  buzz:   { name:"BUZZING",     emoji:"⚡", color:"#fbbf24", sky1:"#1a1000", sky2:"#2a1800", ground:"#3a2000", accent:"#f59e0b", speed:6.5, label:"⚡ BUZZ",   particleColor:"#fbbf24" },
+  flow:   { name:"IN THE FLOW", emoji:"🌊", color:"#2de8cc", sky1:"#041218", sky2:"#04101a", ground:"#0a2030", accent:"#0891b2", speed:5,   label:"🌊 FLOW",   particleColor:"#2de8cc" },
+  foggy:  { name:"FOGGY",       emoji:"🌫️", color:"#94a3b8", sky1:"#0a0c10", sky2:"#0d1018", ground:"#1a1e28", accent:"#475569", speed:3.5, label:"🌫 FOGGY",  particleColor:"#94a3b8" },
+  stuck:  { name:"STUCK",       emoji:"🪨", color:"#a78bfa", sky1:"#0a0414", sky2:"#120820", ground:"#1e1040", accent:"#6d28d9", speed:2.5, label:"🪨 STUCK",  particleColor:"#a78bfa" },
 };
 
 const SNAP_WORDS = {
@@ -1042,7 +1068,7 @@ function updateBreatheUI() {
 }
 
 /* ═══════════════════════════════════════
-   GAME OVER
+   CRASH CHECK-IN FLOW
 ═══════════════════════════════════════ */
 function triggerGameOver() {
   state.running = false;
@@ -1050,12 +1076,69 @@ function triggerGameOver() {
 
   const earned = Math.floor(state.distance * 0.5 + state.snapCount * 15);
   state.xp += earned;
+  state._crashEarned = earned;
 
-  document.getElementById("goScore").textContent = `${Math.floor(state.distance)}m`;
-  document.getElementById("goXP").textContent = `+${earned} XP earned`;
-  document.getElementById("goInsight").innerHTML = INSIGHTS[state.lastSnap || "flow"];
+  // Reset steps
+  document.getElementById("crashStep1").style.display = "flex";
+  document.getElementById("crashStep2").style.display = "none";
+  document.getElementById("crashStep3").style.display = "none";
+
+  // Personalise crash message based on brain state
+  const crashMessages = {
+    rocket: "You were moving FAST — sometimes the engine outruns the brakes.",
+    buzz:   "Lots of energy this run. Hard to slow down when you're buzzing.",
+    flow:   "Even in flow state, obstacles catch us. That's okay.",
+    foggy:  "Running on foggy mode is hard. You still made it this far.",
+    stuck:  "Starting when you're stuck takes courage. You showed up.",
+  };
+  const bs = state.lastSnap || "flow";
+  document.getElementById("crashDist").textContent =
+    `${Math.floor(state.distance)}m · +${earned} XP  —  ${crashMessages[bs]}`;
 
   showScreen("gameoverScreen");
+}
+
+// Step 1 → Step 2: show snap words
+document.getElementById("crashCheckInBtn").onclick = () => {
+  document.getElementById("crashStep1").style.display = "none";
+  document.getElementById("crashStep2").style.display = "flex";
+
+  const words = [...SNAP_WORDS.high, ...SNAP_WORDS.mid]
+    .sort(() => Math.random() - 0.5).slice(0, 9);
+  const container = document.getElementById("crashSnapWords");
+  container.innerHTML = "";
+  words.forEach(item => {
+    const btn = document.createElement("button");
+    btn.className = "snap-word";
+    btn.textContent = item.word;
+    btn.onclick = () => handleCrashSnap(item);
+    container.appendChild(btn);
+  });
+};
+
+// Step 2 → Step 3: show insight
+function handleCrashSnap(item) {
+  state.lastSnap = item.state;
+  const biome = BIOMES[item.state];
+
+  // Adapt next biome
+  const adaptMap = { rocket:"flow", buzz:"flow", flow:"flow", foggy:"buzz", stuck:"buzz" };
+  state.biome = adaptMap[item.state] || "flow";
+
+  // Bonus XP for checking in
+  const bonusXP = 25;
+  state.xp += bonusXP;
+
+  document.getElementById("crashStep2").style.display = "none";
+  document.getElementById("crashStep3").style.display = "flex";
+
+  document.getElementById("crashStateEmoji").textContent = biome.emoji || "⚡";
+  document.getElementById("crashStateLabel").style.color = biome.color;
+  document.getElementById("crashStateLabel").textContent = biome.name;
+  document.getElementById("crashInsight").innerHTML = INSIGHTS[item.state];
+  document.getElementById("crashXPEarned").style.color = "#fbbf24";
+  document.getElementById("crashXPEarned").textContent =
+    `+${state._crashEarned + bonusXP} XP total  ·  Check-in bonus: +${bonusXP} XP`;
 }
 
 /* ═══════════════════════════════════════
@@ -1309,6 +1392,11 @@ style.textContent = `
   @keyframes floatUp {
     from { opacity:1; transform:translateY(0); }
     to   { opacity:0; transform:translateY(-60px); }
+  }
+  @keyframes crashBounce {
+    0%   { transform:scale(0.3) rotate(-20deg); opacity:0; }
+    60%  { transform:scale(1.2) rotate(10deg); opacity:1; }
+    100% { transform:scale(1) rotate(0deg); }
   }
 `;
 document.head.appendChild(style);
