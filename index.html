@@ -1,13 +1,152 @@
 <!DOCTYPE html>
-<html>
+
+<html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
 <title>SPARK RUNNER</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Nunito:wght@600;700;800;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:none;}
+  html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Nunito',sans-serif;}
+  body{display:flex;align-items:center;justify-content:center;}
+  #app{position:relative;overflow:hidden;background:#04060f;width:100vw;height:100vh;max-width:480px;}
+  canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
+
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20;}
+.hidden{display:none!important;}
+
+/* TITLE */
+#titleScreen{background:linear-gradient(180deg,#04060f 0%,#0a0f2e 100%);}
+.title-glow{font-family:‘Orbitron’,sans-serif;font-size:52px;font-weight:900;color:#fff;text-shadow:0 0 40px #38bdf8,0 0 80px #38bdf840;letter-spacing:4px;margin-bottom:4px;}
+.title-sub{font-family:‘Orbitron’,sans-serif;font-size:13px;color:#38bdf8;letter-spacing:8px;margin-bottom:48px;}
+.btn-primary{background:linear-gradient(135deg,#38bdf8,#818cf8);border:none;border-radius:16px;color:#fff;font-family:‘Orbitron’,sans-serif;font-size:16px;font-weight:700;padding:16px 48px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 30px #38bdf850;transition:transform .15s;}
+.btn-primary:active{transform:scale(0.96);}
+.btn-secondary{background:transparent;border:2px solid #38bdf850;border-radius:12px;color:#38bdf8;font-family:‘Nunito’,sans-serif;font-size:14px;font-weight:700;padding:10px 28px;cursor:pointer;margin-top:14px;}
+
+/* SNAP ASSESSMENT */
+#snapScreen{background:#04060f;}
+.snap-title{font-family:‘Orbitron’,sans-serif;font-size:14px;color:#fbbf24;letter-spacing:4px;margin-bottom:8px;}
+.snap-question{font-family:‘Orbitron’,sans-serif;font-size:20px;color:#fff;font-weight:900;text-align:center;margin-bottom:8px;padding:0 20px;}
+.snap-sub{font-size:13px;color:#6b7fa8;margin-bottom:32px;}
+.snap-words{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:0 20px;max-width:380px;}
+.snap-word{background:#111828;border:2px solid #ffffff15;border-radius:99px;color:#e8f0ff;font-family:‘Orbitron’,sans-serif;font-size:13px;font-weight:700;padding:12px 20px;cursor:pointer;transition:all .15s;letter-spacing:1px;}
+.snap-word:active,.snap-word.selected{transform:scale(1.08);}
+.snap-timer-bar{width:320px;height:6px;background:#111828;border-radius:99px;overflow:hidden;margin-bottom:24px;}
+.snap-timer-fill{height:100%;border-radius:99px;transition:width .1s linear;}
+
+/* BREATHE GATE */
+#breatheScreen{background:radial-gradient(ellipse at 50% 50%,#041a2e,#04060f);}
+.breathe-ring{width:160px;height:160px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;margin:24px auto;}
+.breathe-label{font-family:‘Orbitron’,sans-serif;font-size:22px;color:#2de8cc;letter-spacing:3px;margin-bottom:4px;}
+.breathe-count{font-family:‘Orbitron’,sans-serif;font-size:52px;font-weight:900;color:#fff;}
+.breathe-phase{font-family:‘Orbitron’,sans-serif;font-size:14px;letter-spacing:4px;margin-top:12px;}
+.breathe-skip{background:transparent;border:1px solid #ffffff20;border-radius:99px;color:#6b7fa8;font-family:‘Nunito’,sans-serif;font-size:13px;padding:8px 20px;cursor:pointer;margin-top:20px;}
+
+/* HUD */
+#hud{position:absolute;top:0;left:0;right:0;z-index:15;pointer-events:none;}
+.hud-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 0;}
+.hud-xp{font-family:‘Orbitron’,sans-serif;font-size:11px;color:#fbbf24;font-weight:700;}
+.hud-state{font-family:‘Orbitron’,sans-serif;font-size:10px;letter-spacing:2px;padding:4px 10px;border-radius:99px;font-weight:700;}
+.hud-score{font-family:‘Orbitron’,sans-serif;font-size:11px;color:#e8f0ff;}
+
+/* GAMEOVER */
+#gameoverScreen{background:#04060f99;backdrop-filter:blur(8px);}
+.go-title{font-family:‘Orbitron’,sans-serif;font-size:36px;font-weight:900;color:#ff6b6b;text-shadow:0 0 30px #ff6b6b80;margin-bottom:8px;}
+.go-score{font-family:‘Orbitron’,sans-serif;font-size:20px;color:#fbbf24;margin-bottom:4px;}
+.go-xp{font-family:‘Orbitron’,sans-serif;font-size:14px;color:#2de8cc;margin-bottom:32px;}
+.go-insight{background:#111828;border-radius:16px;padding:16px 20px;max-width:300px;font-size:14px;color:#94a3b8;line-height:1.7;text-align:center;margin-bottom:28px;border:1px solid #ffffff10;}
+.go-insight strong{color:#e8f0ff;}
+
+/* MOBILE */
+.snap-word{padding:16px 20px;font-size:15px;min-width:90px;text-align:center;cursor:pointer;}
+.snap-timer-bar{width:90vw;max-width:340px;}
+.title-glow{font-size:clamp(36px,12vw,56px);}
+.snap-question{font-size:clamp(15px,5vw,20px);}
+#jumpBtn,#slideBtn{position:absolute;bottom:0;z-index:16;opacity:0;width:50%;height:120px;cursor:pointer;}
+#jumpBtn{left:0;}
+#slideBtn{right:0;}
+#ctrlOverlay{position:absolute;bottom:0;left:0;right:0;height:120px;z-index:13;display:flex;pointer-events:none;}
+.ctrl-half{flex:1;display:flex;align-items:center;justify-content:center;font-family:‘Orbitron’,sans-serif;font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.1);border-top:1px solid rgba(255,255,255,0.04);}
+</style>
+
 </head>
 <body>
-<script>
-window.location.href = "https://apadhiar81-beep.github.io/spark-runner/game.html";
-</script>
+<div id="app">
+
+  <!-- CANVAS (game renders here) -->
+
+<canvas id="gameCanvas" width="420" height="700"></canvas>
+
+  <!-- On-screen tap zones (invisible but touchable, hidden until game starts) -->
+
+<button id="jumpBtn" aria-label="Jump" style="display:none;"></button>
+<button id="slideBtn" aria-label="Slide" style="display:none;"></button>
+
+  <!-- Visual hint overlay -->
+
+  <div id="ctrlOverlay" class="hidden">
+    <div class="ctrl-half" style="border-right:1px solid rgba(255,255,255,0.06);">👆 JUMP</div>
+    <div class="ctrl-half">👆 SLIDE</div>
+  </div>
+
+  <!-- HUD (always on top during gameplay) -->
+
+  <div id="hud" class="hidden">
+    <div class="hud-bar">
+      <div class="hud-xp" id="hudXP">⚡ 0 XP</div>
+      <div class="hud-state" id="hudState">FLOW</div>
+      <div class="hud-score" id="hudScore">0m</div>
+    </div>
+  </div>
+
+  <!-- TITLE SCREEN -->
+
+  <div class="screen" id="titleScreen">
+    <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;">
+      <canvas id="titleCanvas" width="420" height="700" style="width:100%;height:100%;pointer-events:none;"></canvas>
+    </div>
+    <div style="position:relative;z-index:100;display:flex;flex-direction:column;align-items:center;pointer-events:all;">
+      <div style="font-size:80px;margin-bottom:8px;filter:drop-shadow(0 0 30px #38bdf8);">⚡</div>
+      <div class="title-glow">SPARK</div>
+      <div class="title-sub">RUNNER</div>
+      <button class="btn-primary" id="startBtn" style="position:relative;z-index:100;pointer-events:all;">PLAY NOW</button>
+      <button class="btn-secondary" id="howBtn" style="position:relative;z-index:100;pointer-events:all;">How it works</button>
+    </div>
+  </div>
+
+  <!-- SNAP ASSESSMENT SCREEN -->
+
+  <div class="screen hidden" id="snapScreen">
+    <div class="snap-title">QUICK CHECK-IN</div>
+    <div class="snap-question" id="snapQuestion">RIGHT NOW I FEEL...</div>
+    <div class="snap-sub" id="snapSub">Tap fast — first instinct!</div>
+    <div class="snap-timer-bar"><div class="snap-timer-fill" id="snapTimerFill" style="width:100%;background:linear-gradient(90deg,#2de8cc,#818cf8);"></div></div>
+    <div class="snap-words" id="snapWords"></div>
+  </div>
+
+  <!-- BREATHE GATE SCREEN -->
+
+  <div class="screen hidden" id="breatheScreen">
+    <div class="snap-title" style="color:#2de8cc;">WARP GATE — BREATHE THROUGH</div>
+    <div style="font-size:13px;color:#6b7fa8;margin-bottom:8px;text-align:center;padding:0 30px;">Your hero recharges here. 3 breaths and you're back at full power.</div>
+    <div class="breathe-ring" id="breatheRing">
+      <div class="breathe-count" id="breatheCount">4</div>
+    </div>
+    <div class="breathe-phase" id="breathePhase" style="color:#2de8cc;">BREATHE IN</div>
+    <div style="margin-top:16px;display:flex;gap:8px;" id="breatheDots"></div>
+    <button class="breathe-skip" id="breatheSkip">Skip (−20 XP)</button>
+  </div>
+
+  <!-- CRASH CHECK-IN SCREEN — rewritten by JS each step -->
+
+  <div class="screen hidden" id="gameoverScreen" style="background:#04060f;overflow-y:auto;">
+    <div id="crashContent" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;gap:18px;padding:40px 24px;text-align:center;"></div>
+  </div>
+
+</div>
+
+<script src="p1.js"></script><script src="p2.js"></script>
+
 </body>
 </html>
