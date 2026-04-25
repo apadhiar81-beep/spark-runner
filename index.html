@@ -78,10 +78,10 @@
 
 <canvas id="gameCanvas" width="420" height="700"></canvas>
 
-  <!-- On-screen tap zones (invisible but touchable) -->
+  <!-- On-screen tap zones (invisible but touchable, hidden until game starts) -->
 
-<button id="jumpBtn" aria-label="Jump"></button>
-<button id="slideBtn" aria-label="Slide"></button>
+<button id="jumpBtn" aria-label="Jump" style="display:none;"></button>
+<button id="slideBtn" aria-label="Slide" style="display:none;"></button>
 
   <!-- Visual hint overlay -->
 
@@ -106,12 +106,12 @@
     <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;">
       <canvas id="titleCanvas" width="420" height="700" style="width:420px;height:700px;"></canvas>
     </div>
-    <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;">
+    <div style="position:relative;z-index:100;display:flex;flex-direction:column;align-items:center;pointer-events:all;">
       <div style="font-size:80px;margin-bottom:8px;filter:drop-shadow(0 0 30px #38bdf8);">⚡</div>
       <div class="title-glow">SPARK</div>
       <div class="title-sub">RUNNER</div>
-      <button class="btn-primary" id="startBtn">PLAY NOW</button>
-      <button class="btn-secondary" id="howBtn">How it works</button>
+      <button class="btn-primary" id="startBtn" style="position:relative;z-index:100;pointer-events:all;">PLAY NOW</button>
+      <button class="btn-secondary" id="howBtn" style="position:relative;z-index:100;pointer-events:all;">How it works</button>
     </div>
   </div>
 
@@ -1236,9 +1236,9 @@ let touchStartX = 0;
 let touchStartTime = 0;
 let lastTapTime = 0;
 
-// Prevent ALL default touch behaviour (scroll, zoom, highlight)
-document.addEventListener("touchmove", e=>e.preventDefault(), {passive:false});
-document.addEventListener("touchstart", e=>e.preventDefault(), {passive:false});
+// Prevent scroll/zoom only on the canvas during gameplay
+document.getElementById("gameCanvas").addEventListener("touchmove", e=>e.preventDefault(), {passive:false});
+document.getElementById("gameCanvas").addEventListener("touchstart", e=>{ if(state.running) e.preventDefault(); }, {passive:false});
 
 document.getElementById("app").addEventListener("touchstart", e=>{
   if (!state.running) return;
