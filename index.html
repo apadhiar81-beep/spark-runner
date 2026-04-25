@@ -1078,12 +1078,11 @@ function triggerGameOver() {
   state.xp += earned;
   state._crashEarned = earned;
 
-  // Reset steps
+  // Reset to step 1
   document.getElementById("crashStep1").style.display = "flex";
   document.getElementById("crashStep2").style.display = "none";
   document.getElementById("crashStep3").style.display = "none";
 
-  // Personalise crash message based on brain state
   const crashMessages = {
     rocket: "You were moving FAST — sometimes the engine outruns the brakes.",
     buzz:   "Lots of energy this run. Hard to slow down when you're buzzing.",
@@ -1096,49 +1095,6 @@ function triggerGameOver() {
     `${Math.floor(state.distance)}m · +${earned} XP  —  ${crashMessages[bs]}`;
 
   showScreen("gameoverScreen");
-}
-
-// Step 1 → Step 2: show snap words
-document.getElementById("crashCheckInBtn").onclick = () => {
-  document.getElementById("crashStep1").style.display = "none";
-  document.getElementById("crashStep2").style.display = "flex";
-
-  const words = [...SNAP_WORDS.high, ...SNAP_WORDS.mid]
-    .sort(() => Math.random() - 0.5).slice(0, 9);
-  const container = document.getElementById("crashSnapWords");
-  container.innerHTML = "";
-  words.forEach(item => {
-    const btn = document.createElement("button");
-    btn.className = "snap-word";
-    btn.textContent = item.word;
-    btn.onclick = () => handleCrashSnap(item);
-    container.appendChild(btn);
-  });
-};
-
-// Step 2 → Step 3: show insight
-function handleCrashSnap(item) {
-  state.lastSnap = item.state;
-  const biome = BIOMES[item.state];
-
-  // Adapt next biome
-  const adaptMap = { rocket:"flow", buzz:"flow", flow:"flow", foggy:"buzz", stuck:"buzz" };
-  state.biome = adaptMap[item.state] || "flow";
-
-  // Bonus XP for checking in
-  const bonusXP = 25;
-  state.xp += bonusXP;
-
-  document.getElementById("crashStep2").style.display = "none";
-  document.getElementById("crashStep3").style.display = "flex";
-
-  document.getElementById("crashStateEmoji").textContent = biome.emoji || "⚡";
-  document.getElementById("crashStateLabel").style.color = biome.color;
-  document.getElementById("crashStateLabel").textContent = biome.name;
-  document.getElementById("crashInsight").innerHTML = INSIGHTS[item.state];
-  document.getElementById("crashXPEarned").style.color = "#fbbf24";
-  document.getElementById("crashXPEarned").textContent =
-    `+${state._crashEarned + bonusXP} XP total  ·  Check-in bonus: +${bonusXP} XP`;
 }
 
 /* ═══════════════════════════════════════
@@ -1370,7 +1326,7 @@ document.getElementById("startBtn").onclick = ()=>startGame();
 document.getElementById("jumpBtn").addEventListener("touchstart", e=>{ e.preventDefault(); if(state.running) hero.jump(); },{passive:false});
 document.getElementById("slideBtn").addEventListener("touchstart", e=>{ e.preventDefault(); if(state.running) hero.slide(); },{passive:false});
 document.getElementById("howBtn").onclick = ()=>{
-  alert("🧠 SPARK RUNNER\n\n⚡ TAP to jump (double tap = double jump)\n⬇ HOLD to slide under lasers\n\nEvery 300m: a quick SNAP CHECK-IN asks how you feel\nYour answer adapts the game to match your energy\n\nWARP GATES = breathing exercises that recharge your hero\n+30 XP for completing them!\n\nYour brain state changes your hero's speed and the world. The game MIRRORS your mind.");
+  alert("🧠 SPARK RUNNER\n\nLEFT side of screen = JUMP\nRIGHT side of screen = SLIDE\n\nEvery 600m a snap check-in asks how you feel — tap fast!\nYour answer changes your hero's world and speed.\n\nWARP GATES = breathing exercises. Complete them for +30 XP.\n\nWhen you crash, check in before running again. That's the game.");
 };
 document.getElementById("retryBtn").onclick = ()=>startGame();
 document.getElementById("menuBtn").onclick = ()=>{
@@ -1383,6 +1339,54 @@ document.getElementById("breatheSkip").onclick = ()=>{
   showToast("Skipped (-20 XP)");
   resumeGame();
 };
+
+// CRASH FLOW — Step 1 → 2
+document.getElementById("crashCheckInBtn").addEventListener("touchstart", e=>{
+  e.preventDefault();
+  showCrashStep2();
+});
+document.getElementById("crashCheckInBtn").onclick = ()=> showCrashStep2();
+
+function showCrashStep2() {
+  document.getElementById("crashStep1").style.display = "none";
+  document.getElementById("crashStep2").style.display = "flex";
+
+  const words = [...SNAP_WORDS.high, ...SNAP_WORDS.mid]
+    .sort(() => Math.random() - 0.5).slice(0, 9);
+  const container = document.getElementById("crashSnapWords");
+  container.innerHTML = "";
+  words.forEach(item => {
+    const btn = document.createElement("button");
+    btn.className = "snap-word";
+    btn.textContent = item.word;
+    btn.style.cssText = "min-width:100px;padding:16px 18px;font-size:15px;cursor:pointer;";
+    const select = () => handleCrashSnap(item);
+    btn.addEventListener("touchstart", e=>{ e.preventDefault(); select(); }, {passive:false});
+    btn.onclick = select;
+    container.appendChild(btn);
+  });
+}
+
+function handleCrashSnap(item) {
+  state.lastSnap = item.state;
+  const biome = BIOMES[item.state];
+  const adaptMap = { rocket:"flow", buzz:"flow", flow:"flow", foggy:"buzz", stuck:"buzz" };
+  state.biome = adaptMap[item.state] || "flow";
+
+  const bonusXP = 25;
+  state.xp += bonusXP;
+
+  document.getElementById("crashStep2").style.display = "none";
+  document.getElementById("crashStep3").style.display = "flex";
+
+  document.getElementById("crashStateEmoji").textContent = biome.emoji || "⚡";
+  document.getElementById("crashStateLabel").style.color = biome.color;
+  document.getElementById("crashStateLabel").textContent = biome.name;
+  document.getElementById("crashInsight").innerHTML = INSIGHTS[item.state];
+  document.getElementById("crashXPEarned").style.color = "#fbbf24";
+  document.getElementById("crashXPEarned").textContent =
+    `+${(state._crashEarned||0) + bonusXP} XP  ·  Check-in bonus +${bonusXP} XP 🎉`;
+}
 
 /* ═══════════════════════════════════════
    GLOBAL CSS ANIM INJECTION
