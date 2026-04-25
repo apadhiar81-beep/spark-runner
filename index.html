@@ -59,7 +59,7 @@
 .go-insight strong{color:#e8f0ff;}
 
 /* MOBILE */
-.snap-word{padding:14px 18px;font-size:14px;min-width:90px;text-align:center;}
+.snap-word{padding:16px 20px;font-size:15px;min-width:90px;text-align:center;cursor:pointer;}
 .snap-timer-bar{width:90vw;max-width:340px;}
 .title-glow{font-size:clamp(36px,12vw,56px);}
 .snap-question{font-size:clamp(15px,5vw,20px);}
@@ -86,8 +86,8 @@
   <!-- Visual hint overlay -->
 
   <div id="ctrlOverlay" class="hidden">
-    <div class="ctrl-half">TAP JUMP</div>
-    <div class="ctrl-half">SWIPE↓ SLIDE</div>
+    <div class="ctrl-half" style="border-right:1px solid rgba(255,255,255,0.06);">👆 JUMP</div>
+    <div class="ctrl-half">👆 SLIDE</div>
   </div>
 
   <!-- HUD (always on top during gameplay) -->
@@ -152,6 +152,22 @@
 </div>
 
 <script>
+/* roundRect polyfill — iOS Safari <16 doesn't support it */
+function rrect(c, x, y, w, h, r) {
+  r = Math.min(r, w/2, h/2);
+  c.beginPath();
+  c.moveTo(x+r, y);
+  c.lineTo(x+w-r, y);
+  c.arcTo(x+w, y, x+w, y+r, r);
+  c.lineTo(x+w, y+h-r);
+  c.arcTo(x+w, y+h, x+w-r, y+h, r);
+  c.lineTo(x+r, y+h);
+  c.arcTo(x, y+h, x, y+h-r, r);
+  c.lineTo(x, y+r);
+  c.arcTo(x, y, x+r, y, r);
+  c.closePath();
+}
+
 /* ═══════════════════════════════════════
    CONSTANTS & CONFIG
 ═══════════════════════════════════════ */
@@ -321,7 +337,7 @@ const hero = {
     // Body
     ctx.fillStyle = biome.color;
     ctx.beginPath();
-    ctx.roundRect(hx+4, hy+18, hw-8, hh-18, 6);
+    rrect(ctx, hx+4, hy+18, hw-8, hh-18, 6);
     ctx.fill();
 
     // Cape / lightning trail
@@ -415,42 +431,37 @@ let obstacles = [];
 let obstacleCooldown = 0;
 
 const OBS_TYPES = [
-  { type:"spike",   w:30, h:35, jump:true,  slide:false, color:"#ff4444" },
-  { type:"wall",    w:22, h:70, jump:true,  slide:false, color:"#6b7fa8" },
-  { type:"laser",   w:300, h:18, jump:false, slide:true, color:"#ff6b6b", isLaser:true },
-  { type:"float",   w:34, h:30, jump:true,  slide:false, color:"#fbbf24", floatY: GROUND_Y - 120 },
-  { type:"double",  w:25, h:50, jump:true,  slide:false, color:"#a78bfa", isDouble:true },
+  { type:"spike",  w:28, h:32, color:"#ff4444" },
+  { type:"wall",   w:20, h:65, color:"#6b7fa8" },
+  { type:"laser",  w:0,  h:22, color:"#ff6b6b", isLaser:true },
+  { type:"float",  w:32, h:28, color:"#fbbf24", isFloat:true },
+  { type:"double", w:22, h:48, color:"#a78bfa", isDouble:true },
 ];
 
 function spawnObstacle() {
   if (obstacleCooldown > 0) { obstacleCooldown--; return; }
-  const biome = BIOMES[state.biome];
-  const minGap = Math.max(60, 120 - state.distance * 0.02);
-  obstacleCooldown = Math.floor(minGap / biome.speed * 60) + Math.floor(Math.random()*30);
+  obstacleCooldown = 90 + Math.floor(Math.random() * 70);
 
   let typePool;
-  if (state.distance < 200) typePool = [OBS_TYPES[0], OBS_TYPES[1]];
-  else if (state.distance < 500) typePool = [OBS_TYPES[0], OBS_TYPES[1], OBS_TYPES[3]];
-  else typePool = OBS_TYPES;
+  if      (state.distance < 300) typePool = [0,0,1,1];
+  else if (state.distance < 700) typePool = [0,0,1,1,3];
+  else                           typePool = [0,1,1,2,3,4];
 
-  const t = typePool[Math.floor(Math.random()*typePool.length)];
-  const obs = {...t};
+  const idx = typePool[Math.floor(Math.random()*typePool.length)];
+  const t   = OBS_TYPES[idx];
+  const obs = { ...t, x: W + 30 };
 
   if (obs.isLaser) {
-    obs.y = GROUND_Y - obs.h - 60;
-    obs.x = W + 20;
-    obs.warnTimer = 80;
-    obs.warned = false;
-  } else if (obs.floatY) {
-    obs.y = obs.floatY;
-    obs.x = W + 20;
+    obs.w        = W;
+    obs.y        = GROUND_Y - 85;
+    obs.warnTimer = 90;
+  } else if (obs.isFloat) {
+    obs.y = GROUND_Y - 110;
   } else if (obs.isDouble) {
-    obs.y = GROUND_Y - obs.h;
-    obs.x = W + 20;
-    obs.x2 = W + 80;
+    obs.y  = GROUND_Y - obs.h;
+    obs.x2 = W + 90;
   } else {
     obs.y = GROUND_Y - obs.h;
-    obs.x = W + 20;
   }
   obstacles.push(obs);
 }
@@ -646,7 +657,7 @@ function drawObstacles() {
     } else {
       ctx.fillStyle = obs.color + "dd";
       ctx.beginPath();
-      ctx.roundRect(obs.x, obs.y, obs.w, obs.h, 4);
+      rrect(ctx, obs.x, obs.y, obs.w, obs.h, 4);
       ctx.fill();
       // Glow edge
       ctx.strokeStyle = obs.color;
@@ -657,7 +668,7 @@ function drawObstacles() {
     if (obs.isDouble) {
       ctx.fillStyle = obs.color + "dd";
       ctx.beginPath();
-      ctx.roundRect(obs.x2, obs.y, obs.w, obs.h, 4);
+      rrect(ctx, obs.x2, obs.y, obs.w, obs.h, 4);
       ctx.fill();
     }
 
@@ -675,7 +686,7 @@ function drawGate() {
   ctx.strokeStyle = "#2de8cc";
   ctx.lineWidth = 4;
   ctx.beginPath();
-  ctx.roundRect(gate.x - 4, GROUND_Y - 130, 50, 130, 10);
+  rrect(ctx, gate.x - 4, GROUND_Y - 130, 50, 130, 10);
   ctx.stroke();
 
   // Portal fill
@@ -685,7 +696,7 @@ function drawGate() {
   pg.addColorStop(1, "#2de8cc20");
   ctx.fillStyle = pg;
   ctx.beginPath();
-  ctx.roundRect(gate.x - 4, GROUND_Y - 130, 50, 130, 10);
+  rrect(ctx, gate.x - 4, GROUND_Y - 130, 50, 130, 10);
   ctx.fill();
 
   // BREATHE text
@@ -703,16 +714,27 @@ function drawGate() {
 }
 
 function drawHints() {
-  if (state.distance < 80) {
-    ctx.save();
-    ctx.globalAlpha = Math.min(1, (80 - state.distance) / 40);
-    ctx.fillStyle = "#fff";
-    ctx.font = "bold 14px Nunito";
-    ctx.textAlign = "center";
-    ctx.fillText("TAP = JUMP   DOUBLE TAP = DOUBLE JUMP", W/2, H - 145);
-    ctx.fillText("HOLD = SLIDE under lasers", W/2, H - 125);
-    ctx.restore();
-  }
+  // Always show control zones faintly at bottom
+  ctx.save();
+  ctx.globalAlpha = 0.07;
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4,4]);
+  ctx.beginPath();
+  ctx.moveTo(W * 0.67, GROUND_Y + 10);
+  ctx.lineTo(W * 0.67, H);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  ctx.save();
+  ctx.globalAlpha = Math.max(0, Math.min(0.5, (200 - state.distance) / 200));
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 13px Orbitron";
+  ctx.textAlign = "center";
+  ctx.fillText("TAP LEFT = JUMP", W * 0.33, H - 20);
+  ctx.fillText("TAP RIGHT = SLIDE", W * 0.83, H - 20);
+  ctx.restore();
 }
 
 function drawBurstParticles() {
@@ -738,7 +760,7 @@ function drawDistanceMarker() {
   ctx.save();
   ctx.fillStyle = "rgba(0,0,0,0.4)";
   ctx.beginPath();
-  ctx.roundRect(W/2 - 50, 48, 100, 22, 8);
+  rrect(ctx, W/2 - 50, 48, 100, 22, 8);
   ctx.fill();
   ctx.fillStyle = "#fff";
   ctx.font = "bold 12px Orbitron";
@@ -794,6 +816,7 @@ let animId = null;
 
 function gameLoop(ts) {
   if (!state.running) return;
+  try {
   const dt = Math.min((ts - lastTime) / 16.67, 3);
   lastTime = ts;
 
@@ -808,7 +831,7 @@ function gameLoop(ts) {
     if (obs.isDouble) obs.x2 -= state.speed;
     if (obs.isLaser && obs.warnTimer > 0) obs.warnTimer--;
   });
-  obstacles = obstacles.filter(obs => obs.x + (obs.w || 300) > -20);
+  obstacles = obstacles.filter(obs => obs.x > -60);
 
   // Move gate
   if (gate) {
@@ -857,6 +880,7 @@ function gameLoop(ts) {
   state.sessionXP = Math.floor(state.distance * 0.5 + (state.snapCount * 15));
 
   animId = requestAnimationFrame(gameLoop);
+  } catch(e) { console.error('Loop:',e.message); }
 }
 
 /* ═══════════════════════════════════════
@@ -1051,14 +1075,14 @@ function startGame() {
 
   obstacles = [];
   burstParticles = [];
-  obstacleCooldown = 120;
+  obstacleCooldown = 150;
   gate = null;
 
   state.running = true;
   state.distance = 0;
   state.sessionXP = 0;
-  state.nextCheckpoint = 300;
-  state.checkpointDist = 350;
+  state.nextCheckpoint = 600;
+  state.checkpointDist = 500;
   state.snapCount = 0;
   state.lastSnap = null;
   state.biome = "flow";
@@ -1081,6 +1105,10 @@ function startGame() {
 
 function resumeGame() {
   showScreen("game");
+  // Clear any obstacles that built up off-screen, give breathing room
+  obstacles = obstacles.filter(obs => obs.x > 0 && obs.x < W + 200);
+  obstacleCooldown = 100;
+  hero.invincible = 60;
   state.running = true;
   lastTime = performance.now();
   animId = requestAnimationFrame(gameLoop);
@@ -1191,7 +1219,7 @@ function animateTitle() {
   tctx.shadowBlur = 25;
   tctx.shadowColor = "#38bdf8";
   tctx.beginPath();
-  tctx.roundRect(titleHero.x+4, titleHero.y+18, 28, 38, 5);
+  rrect(tctx, titleHero.x+4, titleHero.y+18, 28, 38, 5);
   tctx.fill();
   tctx.fillStyle = "#0d1535";
   tctx.beginPath();
@@ -1229,48 +1257,27 @@ function animateTitle() {
 animateTitle();
 
 /* ═══════════════════════════════════════
-   INPUT HANDLING — MOBILE FIRST
+   INPUT HANDLING — SIMPLE & RELIABLE
 ═══════════════════════════════════════ */
-let touchStartY = 0;
-let touchStartX = 0;
-let touchStartTime = 0;
-let lastTapTime = 0;
 
-// Prevent scroll/zoom only on the canvas during gameplay
-document.getElementById("gameCanvas").addEventListener("touchmove", e=>e.preventDefault(), {passive:false});
-document.getElementById("gameCanvas").addEventListener("touchstart", e=>{ if(state.running) e.preventDefault(); }, {passive:false});
-
+// Tap anywhere on left 2/3 = JUMP, right 1/3 = SLIDE
 document.getElementById("app").addEventListener("touchstart", e=>{
   if (!state.running) return;
-  touchStartY = e.touches[0].clientY;
-  touchStartX = e.touches[0].clientX;
-  touchStartTime = Date.now();
-  const now = Date.now();
-  // Double-tap = second jump (within 280ms)
-  if (now - lastTapTime < 280) {
-    hero.jump();
-  }
-  lastTapTime = now;
-}, {passive:false});
-
-document.getElementById("app").addEventListener("touchend", e=>{
-  if (!state.running) return;
-  const dy = e.changedTouches[0].clientY - touchStartY;
-  const dt = Date.now() - touchStartTime;
-  if (dy > 40 && dt < 400) {
-    // Swipe down = slide
+  e.preventDefault();
+  const x = e.touches[0].clientX;
+  const screenW = window.innerWidth;
+  if (x > screenW * 0.67) {
     hero.slide();
-  } else if (Math.abs(dy) < 25) {
-    // Tap = jump
+  } else {
     hero.jump();
   }
 }, {passive:false});
 
-// Keyboard (desktop testing)
+// Keyboard fallback
 document.addEventListener("keydown", e=>{
   if (!state.running) return;
-  if (e.code==="Space"||e.code==="ArrowUp"||e.code==="KeyW") { e.preventDefault(); hero.jump(); }
-  if (e.code==="ArrowDown"||e.code==="KeyS") { e.preventDefault(); hero.slide(); }
+  if (e.code==="Space"||e.code==="ArrowUp") { e.preventDefault(); hero.jump(); }
+  if (e.code==="ArrowDown") { e.preventDefault(); hero.slide(); }
 });
 
 /* ═══════════════════════════════════════
