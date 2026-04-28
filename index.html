@@ -1,1379 +1,952 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
 <title>SPARK RUNNER</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Nunito:wght@600;700;800;900&display=swap');
-  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:none;}
-  html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Nunito',sans-serif;}
-  body{display:flex;align-items:center;justify-content:center;}
-  #app{position:relative;overflow:hidden;background:#04060f;width:100vw;height:100vh;max-width:480px;}
-  canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
-
-.screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20;}
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Nunito:wght@600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:none;}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;}
+body{display:flex;align-items:center;justify-content:center;}
+#app{position:relative;overflow:hidden;background:#04060f;width:100vw;height:100vh;max-width:480px;}
+canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20;font-family:'Nunito',sans-serif;}
 .hidden{display:none!important;}
-
-/* TITLE */
-#titleScreen{background:linear-gradient(180deg,#04060f 0%,#0a0f2e 100%);}
-.title-glow{font-family:‘Orbitron’,sans-serif;font-size:52px;font-weight:900;color:#fff;text-shadow:0 0 40px #38bdf8,0 0 80px #38bdf840;letter-spacing:4px;margin-bottom:4px;}
-.title-sub{font-family:‘Orbitron’,sans-serif;font-size:13px;color:#38bdf8;letter-spacing:8px;margin-bottom:48px;}
-.btn-primary{background:linear-gradient(135deg,#38bdf8,#818cf8);border:none;border-radius:16px;color:#fff;font-family:‘Orbitron’,sans-serif;font-size:16px;font-weight:700;padding:16px 48px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 30px #38bdf850;transition:transform .15s;}
-.btn-primary:active{transform:scale(0.96);}
-.btn-secondary{background:transparent;border:2px solid #38bdf850;border-radius:12px;color:#38bdf8;font-family:‘Nunito’,sans-serif;font-size:14px;font-weight:700;padding:10px 28px;cursor:pointer;margin-top:14px;}
-
-/* SNAP ASSESSMENT */
-#snapScreen{background:#04060f;}
-.snap-title{font-family:‘Orbitron’,sans-serif;font-size:14px;color:#fbbf24;letter-spacing:4px;margin-bottom:8px;}
-.snap-question{font-family:‘Orbitron’,sans-serif;font-size:20px;color:#fff;font-weight:900;text-align:center;margin-bottom:8px;padding:0 20px;}
-.snap-sub{font-size:13px;color:#6b7fa8;margin-bottom:32px;}
-.snap-words{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:0 20px;max-width:380px;}
-.snap-word{background:#111828;border:2px solid #ffffff15;border-radius:99px;color:#e8f0ff;font-family:‘Orbitron’,sans-serif;font-size:13px;font-weight:700;padding:12px 20px;cursor:pointer;transition:all .15s;letter-spacing:1px;}
-.snap-word:active,.snap-word.selected{transform:scale(1.08);}
-.snap-timer-bar{width:320px;height:6px;background:#111828;border-radius:99px;overflow:hidden;margin-bottom:24px;}
-.snap-timer-fill{height:100%;border-radius:99px;transition:width .1s linear;}
-
-/* BREATHE GATE */
-#breatheScreen{background:radial-gradient(ellipse at 50% 50%,#041a2e,#04060f);}
-.breathe-ring{width:160px;height:160px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;margin:24px auto;}
-.breathe-label{font-family:‘Orbitron’,sans-serif;font-size:22px;color:#2de8cc;letter-spacing:3px;margin-bottom:4px;}
-.breathe-count{font-family:‘Orbitron’,sans-serif;font-size:52px;font-weight:900;color:#fff;}
-.breathe-phase{font-family:‘Orbitron’,sans-serif;font-size:14px;letter-spacing:4px;margin-top:12px;}
-.breathe-skip{background:transparent;border:1px solid #ffffff20;border-radius:99px;color:#6b7fa8;font-family:‘Nunito’,sans-serif;font-size:13px;padding:8px 20px;cursor:pointer;margin-top:20px;}
-
-/* HUD */
-#hud{position:absolute;top:0;left:0;right:0;z-index:15;pointer-events:none;}
-.hud-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 0;}
-.hud-xp{font-family:‘Orbitron’,sans-serif;font-size:11px;color:#fbbf24;font-weight:700;}
-.hud-state{font-family:‘Orbitron’,sans-serif;font-size:10px;letter-spacing:2px;padding:4px 10px;border-radius:99px;font-weight:700;}
-.hud-score{font-family:‘Orbitron’,sans-serif;font-size:11px;color:#e8f0ff;}
-
-/* GAMEOVER */
-#gameoverScreen{background:#04060f99;backdrop-filter:blur(8px);}
-.go-title{font-family:‘Orbitron’,sans-serif;font-size:36px;font-weight:900;color:#ff6b6b;text-shadow:0 0 30px #ff6b6b80;margin-bottom:8px;}
-.go-score{font-family:‘Orbitron’,sans-serif;font-size:20px;color:#fbbf24;margin-bottom:4px;}
-.go-xp{font-family:‘Orbitron’,sans-serif;font-size:14px;color:#2de8cc;margin-bottom:32px;}
-.go-insight{background:#111828;border-radius:16px;padding:16px 20px;max-width:300px;font-size:14px;color:#94a3b8;line-height:1.7;text-align:center;margin-bottom:28px;border:1px solid #ffffff10;}
-.go-insight strong{color:#e8f0ff;}
-
-/* MOBILE */
-.snap-word{padding:16px 20px;font-size:15px;min-width:90px;text-align:center;cursor:pointer;}
-.snap-timer-bar{width:90vw;max-width:340px;}
-.title-glow{font-size:clamp(36px,12vw,56px);}
-.snap-question{font-size:clamp(15px,5vw,20px);}
-#jumpBtn,#slideBtn{position:absolute;bottom:0;z-index:16;opacity:0;width:50%;height:120px;cursor:pointer;}
-#jumpBtn{left:0;}
-#slideBtn{right:0;}
-#ctrlOverlay{position:absolute;bottom:0;left:0;right:0;height:120px;z-index:13;display:flex;pointer-events:none;}
-.ctrl-half{flex:1;display:flex;align-items:center;justify-content:center;font-family:‘Orbitron’,sans-serif;font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.1);border-top:1px solid rgba(255,255,255,0.04);}
+#hud{position:absolute;top:0;left:0;right:0;z-index:15;pointer-events:none;padding:14px 18px 0;display:flex;align-items:center;justify-content:space-between;}
+.hud-xp{font-family:'Orbitron',sans-serif;font-size:11px;color:#fbbf24;font-weight:700;}
+.hud-state{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;padding:4px 10px;border-radius:99px;font-weight:700;border:1px solid #2de8cc40;color:#2de8cc;background:#2de8cc20;}
+.hud-score{font-family:'Orbitron',sans-serif;font-size:11px;color:#e8f0ff;}
+.orb{font-family:'Orbitron',sans-serif;}
+.btn{border:none;border-radius:16px;color:#fff;font-family:'Orbitron',sans-serif;font-size:15px;font-weight:700;padding:16px 32px;cursor:pointer;width:100%;max-width:300px;margin:6px 0;}
+.btn-primary{background:linear-gradient(135deg,#38bdf8,#818cf8);}
+.btn-secondary{background:transparent;border:2px solid #38bdf850;color:#38bdf8;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;padding:12px 28px;}
+.card{background:#111828;border-radius:20px;padding:18px 22px;max-width:320px;border:1px solid #ffffff15;width:100%;}
 </style>
-
 </head>
 <body>
 <div id="app">
+  <canvas id="gc" width="420" height="700"></canvas>
 
-  <!-- CANVAS (game renders here) -->
-
-<canvas id="gameCanvas" width="420" height="700"></canvas>
-
-  <!-- On-screen tap zones (invisible but touchable, hidden until game starts) -->
-
-<button id="jumpBtn" aria-label="Jump" style="display:none;"></button>
-<button id="slideBtn" aria-label="Slide" style="display:none;"></button>
-
-  <!-- Visual hint overlay -->
-
-  <div id="ctrlOverlay" class="hidden">
-    <div class="ctrl-half" style="border-right:1px solid rgba(255,255,255,0.06);">👆 JUMP</div>
-    <div class="ctrl-half">👆 SLIDE</div>
-  </div>
-
-  <!-- HUD (always on top during gameplay) -->
-
+  <!-- HUD -->
   <div id="hud" class="hidden">
-    <div class="hud-bar">
-      <div class="hud-xp" id="hudXP">⚡ 0 XP</div>
-      <div class="hud-state" id="hudState">FLOW</div>
-      <div class="hud-score" id="hudScore">0m</div>
+    <div class="hud-xp" id="hudXP">⚡ 0 XP</div>
+    <div class="hud-state" id="hudState">DIAGNOSTIC</div>
+    <div class="hud-score" id="hudDist">0m</div>
+  </div>
+
+  <!-- TITLE -->
+  <div class="screen" id="sTitle" style="background:linear-gradient(180deg,#04060f,#040d1e);">
+    <canvas id="tc" width="420" height="700" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
+    <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:8px;">
+      <div style="font-size:80px;filter:drop-shadow(0 0 30px #38bdf8);">⚡</div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:clamp(36px,12vw,56px);font-weight:900;color:#fff;text-shadow:0 0 40px #38bdf8,0 0 80px #38bdf840;letter-spacing:4px;">SPARK</div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:13px;color:#38bdf8;letter-spacing:8px;margin-bottom:32px;">RUNNER</div>
+      <button class="btn btn-primary" onclick="startDiagnostic()">PLAY NOW</button>
+      <button class="btn btn-secondary" onclick="showHow()">How it works</button>
     </div>
   </div>
 
-  <!-- TITLE SCREEN -->
-
-  <div class="screen" id="titleScreen">
-    <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;">
-      <canvas id="titleCanvas" width="420" height="700" style="width:100%;height:100%;pointer-events:none;"></canvas>
+  <!-- DIAGNOSTIC INTRO -->
+  <div class="screen hidden" id="sDiagIntro" style="background:#04060f;padding:24px;gap:16px;">
+    <div style="font-size:52px;">🧠</div>
+    <div class="orb" style="font-size:18px;color:#38bdf8;letter-spacing:3px;">BRAIN SCAN</div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:14px;color:#94a3b8;line-height:1.8;">
+        First we need to see what your brain is doing today.<br><br>
+        <strong style="color:#e8f0ff;">Just run. Don't worry about crashing.</strong><br><br>
+        The game is watching your reactions — not judging them.
+      </div>
     </div>
-    <div style="position:relative;z-index:100;display:flex;flex-direction:column;align-items:center;pointer-events:all;">
-      <div style="font-size:80px;margin-bottom:8px;filter:drop-shadow(0 0 30px #38bdf8);">⚡</div>
-      <div class="title-glow">SPARK</div>
-      <div class="title-sub">RUNNER</div>
-      <button class="btn-primary" id="startBtn" onclick="if(typeof startGame!=='undefined')startGame();" style="position:relative;z-index:100;pointer-events:all;">PLAY NOW</button>
-      <button class="btn-secondary" id="howBtn" onclick="alert('LEFT side = JUMP\nRIGHT side = SLIDE\n\nCrash = check in before running again!');" style="position:relative;z-index:100;pointer-events:all;">How it works</button>
-    </div>
+    <button class="btn btn-primary" onclick="beginDiagnosticRun()" style="margin-top:8px;">START SCAN ⚡</button>
   </div>
 
-  <!-- SNAP ASSESSMENT SCREEN -->
-
-  <div class="screen hidden" id="snapScreen">
-    <div class="snap-title">QUICK CHECK-IN</div>
-    <div class="snap-question" id="snapQuestion">RIGHT NOW I FEEL...</div>
-    <div class="snap-sub" id="snapSub">Tap fast — first instinct!</div>
-    <div class="snap-timer-bar"><div class="snap-timer-fill" id="snapTimerFill" style="width:100%;background:linear-gradient(90deg,#2de8cc,#818cf8);"></div></div>
-    <div class="snap-words" id="snapWords"></div>
+  <!-- SNAP DIAGNOSTIC (3 questions) -->
+  <div class="screen hidden" id="sSnap" style="background:#04060f;padding:20px;gap:12px;">
+    <div id="snapContent" style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:360px;"></div>
   </div>
 
-  <!-- BREATHE GATE SCREEN -->
-
-  <div class="screen hidden" id="breatheScreen">
-    <div class="snap-title" style="color:#2de8cc;">WARP GATE — BREATHE THROUGH</div>
-    <div style="font-size:13px;color:#6b7fa8;margin-bottom:8px;text-align:center;padding:0 30px;">Your hero recharges here. 3 breaths and you're back at full power.</div>
-    <div class="breathe-ring" id="breatheRing">
-      <div class="breathe-count" id="breatheCount">4</div>
-    </div>
-    <div class="breathe-phase" id="breathePhase" style="color:#2de8cc;">BREATHE IN</div>
-    <div style="margin-top:16px;display:flex;gap:8px;" id="breatheDots"></div>
-    <button class="breathe-skip" id="breatheSkip">Skip (−20 XP)</button>
+  <!-- BIOME INTRO -->
+  <div class="screen hidden" id="sBiomeIntro" style="background:#04060f;padding:24px;gap:16px;">
+    <div style="font-size:64px;" id="biomeEmoji">🌋</div>
+    <div class="orb" style="font-size:20px;font-weight:900;letter-spacing:2px;" id="biomeName">VOLCANO WORLD</div>
+    <div class="card" style="text-align:center;" id="biomeDesc"></div>
+    <div class="card" style="text-align:center;border-color:#fbbf2430;" id="biomeStrategy"></div>
+    <button class="btn btn-primary" onclick="launchBiome()" id="biomeBtn">ENTER ⚡</button>
   </div>
 
-  <!-- CRASH CHECK-IN SCREEN — rewritten by JS each step -->
+  <!-- REGULATION PAUSE -->
+  <div class="screen hidden" id="sRegulate" style="background:#04060f;padding:20px;gap:14px;overflow-y:auto;">
+    <div id="regulateContent" style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:360px;"></div>
+  </div>
 
-  <div class="screen hidden" id="gameoverScreen" style="background:#04060f;overflow-y:auto;">
-    <div id="crashContent" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;gap:18px;padding:40px 24px;text-align:center;"></div>
+  <!-- INSIGHT -->
+  <div class="screen hidden" id="sInsight" style="background:#04060f;padding:24px;gap:16px;">
+    <div style="font-size:56px;" id="insightEmoji">✨</div>
+    <div class="orb" style="font-size:14px;color:#fbbf24;letter-spacing:3px;">BRAIN INSIGHT</div>
+    <div class="card" style="text-align:center;" id="insightText"></div>
+    <div class="card" style="border-color:#2de8cc30;text-align:center;" id="insightXP"></div>
+    <button class="btn btn-primary" onclick="startGame(currentBiome)">RUN AGAIN ⚡</button>
+    <button class="btn btn-secondary" onclick="goTitle()">Main Menu</button>
   </div>
 
 </div>
 
 <script>
-window.addEventListener("load", function() {
+window.addEventListener('load', function() {
 
-/* roundRect polyfill — iOS Safari <16 doesn't support it */
-function rrect(c, x, y, w, h, r) {
-  r = Math.min(r, w/2, h/2);
-  c.beginPath();
-  c.moveTo(x+r, y);
-  c.lineTo(x+w-r, y);
-  c.arcTo(x+w, y, x+w, y+r, r);
-  c.lineTo(x+w, y+h-r);
-  c.arcTo(x+w, y+h, x+w-r, y+h, r);
-  c.lineTo(x+r, y+h);
-  c.arcTo(x, y+h, x, y+h-r, r);
-  c.lineTo(x, y+r);
-  c.arcTo(x, y, x+r, y, r);
-  c.closePath();
+/* ========================================
+   CANVAS + DIMENSIONS
+======================================== */
+const app = document.getElementById('app');
+const gc  = document.getElementById('gc');
+const ctx = gc.getContext('2d');
+const W   = Math.min(window.innerWidth, 480);
+const H   = window.innerHeight;
+gc.width  = W; gc.height = H;
+const GY  = H - Math.round(H * 0.16);  // ground y
+const HX  = Math.round(W * 0.18);       // hero x
+
+/* ========================================
+   TITLE CANVAS ANIMATION
+======================================== */
+const tc = document.getElementById('tc');
+const tctx = tc.getContext('2d');
+tc.width = W; tc.height = H;
+const tStars = Array.from({length:150},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.4+0.3,t:Math.random()*Math.PI*2,s:Math.random()*0.02+0.008}));
+const tHero = {x:-60,y:GY-80,vx:3.5};
+function animTitle(){
+  tctx.clearRect(0,0,W,H);
+  const g=tctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#04060f');g.addColorStop(0.6,'#040d1e');g.addColorStop(1,'#04080f');
+  tctx.fillStyle=g;tctx.fillRect(0,0,W,H);
+  tStars.forEach(s=>{s.t+=s.s;tctx.globalAlpha=0.3+Math.sin(s.t)*0.4;tctx.fillStyle='#fff';tctx.beginPath();tctx.arc(s.x,s.y,s.r,0,Math.PI*2);tctx.fill();});
+  tctx.globalAlpha=1;
+  tHero.x+=tHero.vx; if(tHero.x>W+60)tHero.x=-60;
+  drawHeroAt(tctx,tHero.x,tHero.y,40,'#38bdf8',0);
+  tctx.strokeStyle='#38bdf830';tctx.lineWidth=2;tctx.beginPath();tctx.moveTo(0,GY);tctx.lineTo(W,GY);tctx.stroke();
+  requestAnimationFrame(animTitle);
+}
+animTitle();
+
+/* ========================================
+   ROUNDRECT POLYFILL
+======================================== */
+function rr(c,x,y,w,h,r){
+  r=Math.min(r,w/2,h/2);
+  c.beginPath();c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.arcTo(x+w,y,x+w,y+r,r);
+  c.lineTo(x+w,y+h-r);c.arcTo(x+w,y+h,x+w-r,y+h,r);
+  c.lineTo(x+r,y+h);c.arcTo(x,y+h,x,y+h-r,r);c.lineTo(x,y+r);c.arcTo(x,y,x+r,y,r);c.closePath();
 }
 
-/* ═══════════════════════════════════════
-   CONSTANTS & CONFIG
-═══════════════════════════════════════ */
-const W = Math.min(window.innerWidth, 480);
-const H = window.innerHeight;
-const GROUND_Y = H - Math.round(H * 0.17);
-const HERO_X = Math.round(W * 0.19);
-// Size canvases to actual screen
-['gameCanvas','titleCanvas'].forEach(id=>{
-  const c=document.getElementById(id);
-  c.width=W; c.height=H;
-  c.style.width=W+'px'; c.style.height=H+'px';
-});
-
+/* ========================================
+   BIOME DEFINITIONS
+======================================== */
 const BIOMES = {
-  rocket: { name:"ROCKET MODE", emoji:"🚀", color:"#ff6b6b", sky1:"#1a0505", sky2:"#2d0a0a", ground:"#3d1010", accent:"#ff4444", speed:8,   label:"⚡ ROCKET", particleColor:"#ff6b6b" },
-  buzz:   { name:"BUZZING",     emoji:"⚡", color:"#fbbf24", sky1:"#1a1000", sky2:"#2a1800", ground:"#3a2000", accent:"#f59e0b", speed:6.5, label:"⚡ BUZZ",   particleColor:"#fbbf24" },
-  flow:   { name:"IN THE FLOW", emoji:"🌊", color:"#2de8cc", sky1:"#041218", sky2:"#04101a", ground:"#0a2030", accent:"#0891b2", speed:5,   label:"🌊 FLOW",   particleColor:"#2de8cc" },
-  foggy:  { name:"FOGGY",       emoji:"🌫️", color:"#94a3b8", sky1:"#0a0c10", sky2:"#0d1018", ground:"#1a1e28", accent:"#475569", speed:3.5, label:"🌫 FOGGY",  particleColor:"#94a3b8" },
-  stuck:  { name:"STUCK",       emoji:"🪨", color:"#a78bfa", sky1:"#0a0414", sky2:"#120820", ground:"#1e1040", accent:"#6d28d9", speed:2.5, label:"🪨 STUCK",  particleColor:"#a78bfa" },
+  diagnostic:{
+    id:'diagnostic',name:'DIAGNOSTIC RUN',emoji:'🔬',
+    color:'#38bdf8',sky1:'#04060f',sky2:'#040d1e',ground:'#0a1020',
+    baseSpeed:4.5, speedCap:7, particleColor:'#38bdf8',
+    desc:'The game is reading your brain. Just run — there are no wrong moves here.',
+    strategy:'React naturally. Jump when you need to. The obstacles will reveal your pattern.',
+    label:'🔬 SCANNING'
+  },
+  volcano:{
+    id:'volcano',name:'VOLCANO WORLD',emoji:'🌋',
+    color:'#ff6b6b',sky1:'#1a0505',sky2:'#2d0a0a',ground:'#3d1010',
+    baseSpeed:7, speedCap:12, particleColor:'#ff6b6b',
+    desc:'High energy detected. This world matches your fire — but precision beats speed here.',
+    strategy:'💡 Your brain tip: You\'re running HOT. One focused jump beats three panicked ones. Breathe between obstacles.',
+    label:'🌋 VOLCANO'
+  },
+  ocean:{
+    id:'ocean',name:'DEEP OCEAN',emoji:'🌊',
+    color:'#2de8cc',sky1:'#020e14',sky2:'#041218',ground:'#061820',
+    baseSpeed:4, speedCap:7, particleColor:'#2de8cc',
+    desc:'Tension detected. This world runs on rhythm — obstacles move in patterns you can master.',
+    strategy:'💡 Your brain tip: Watch the pattern before you jump. Your brain is good at this when it feels safe.',
+    label:'🌊 OCEAN'
+  },
+  fog:{
+    id:'fog',name:'FOG WORLD',emoji:'🌫️',
+    color:'#94a3b8',sky1:'#080a0e',sky2:'#0a0c12',ground:'#141820',
+    baseSpeed:3, speedCap:5, particleColor:'#a0aec0',
+    desc:'Low energy detected. Hidden things to discover — gentle speed, big rewards.',
+    strategy:'💡 Your brain tip: You don\'t need speed right now. Find the hidden gems. Curiosity wakes the brain up.',
+    label:'🌫 FOG'
+  },
+  flow:{
+    id:'flow',name:'FLOW STATE',emoji:'⚡',
+    color:'#fbbf24',sky1:'#0a0800',sky2:'#100e00',ground:'#1a1400',
+    baseSpeed:6, speedCap:9, particleColor:'#fbbf24',
+    desc:'REGULATED. This is your power zone — speed AND control working together.',
+    strategy:'💡 Your brain tip: This is what regulation feels like. Remember this feeling.',
+    label:'⚡ FLOW'
+  }
 };
 
-const SNAP_WORDS = {
-  high:   [{word:"ELECTRIC",   state:"rocket"},{word:"HYPER",     state:"rocket"},{word:"UNSTOPPABLE",state:"rocket"},
-           {word:"BUZZING",    state:"buzz"},  {word:"WIRED",     state:"buzz"},  {word:"FIRED UP",  state:"buzz"},
-           {word:"FOCUSED",    state:"flow"},  {word:"GOOD",      state:"flow"},  {word:"CALM",      state:"flow"},
-           {word:"FOGGY",      state:"foggy"}, {word:"TIRED",     state:"foggy"}, {word:"FROZEN",    state:"stuck"}],
-  mid:    [{word:"ANXIOUS",    state:"buzz"},  {word:"RESTLESS",  state:"buzz"},  {word:"READY",     state:"flow"},
-           {word:"OKAY",       state:"flow"},  {word:"SLOW",      state:"foggy"}, {word:"FLAT",      state:"stuck"}],
+/* ========================================
+   BRAIN STATES (diagnostic output)
+======================================== */
+const BRAIN_STATES = {
+  hyperactive:{
+    label:'HYPERACTIVE',color:'#ff6b6b',emoji:'🌋',
+    desc:'Your brain is running at FULL POWER right now. High energy, fast reactions, hard to brake.',
+    biome:'volcano',
+    regulation:'volcano'
+  },
+  anxious:{
+    label:'ANXIOUS / TENSE',color:'#f97316',emoji:'⚡',
+    desc:'Your brain is in alert mode — tight, watchful, ready to react. Lots of energy with nowhere to go.',
+    biome:'ocean',
+    regulation:'breathe'
+  },
+  foggy:{
+    label:'FOGGY / LOW',color:'#94a3b8',emoji:'🌫️',
+    desc:'Your brain is running slow today — hard to get started, hard to focus. That\'s okay.',
+    biome:'fog',
+    regulation:'move'
+  },
+  frustrated:{
+    label:'FRUSTRATED',color:'#a78bfa',emoji:'🔥',
+    desc:'Your brain is stuck in a loop — energy building with no release. Classic ADHD frustration pattern.',
+    biome:'ocean',
+    regulation:'shake'
+  },
+  regulated:{
+    label:'REGULATED',color:'#2de8cc',emoji:'🌊',
+    desc:'Your brain is in a good place — not too fast, not too slow. You\'re in the zone.',
+    biome:'flow',
+    regulation:'none'
+  }
 };
 
-const INSIGHTS = {
-  rocket: "Your brain was in ROCKET MODE — high energy, fast reactions. Your hero crashed because speed without control is tough. Next run: can you notice when you're moving TOO fast?",
-  buzz:   "You were BUZZING — your hero had great speed but needed more focus at the obstacles. Try the breathing gate next time to sharpen your reactions.",
-  flow:   "You were IN THE FLOW — that's your power zone. When you feel like this, your brain performs best. Remember this feeling.",
-  foggy:  "You were FOGGY this run — and your hero felt it too. That's okay. Even foggy days teach you something. What would help you get to FLOW?",
-  stuck:  "You were STUCK — and that takes real courage to still play. Your hero kept running even when it felt impossible. So did you.",
+/* ========================================
+   SNAP QUESTIONS
+======================================== */
+const SNAP_QUESTIONS = [
+  {
+    q:'Your brain feels like...',
+    options:[
+      {word:'⛈ STORM',    state:'hyperactive', score:{hyperactive:3,anxious:1}},
+      {word:'🌫 FOG',      state:'foggy',       score:{foggy:3}},
+      {word:'🔥 FIRE',     state:'frustrated',  score:{frustrated:3,hyperactive:1}},
+      {word:'🌊 STILL',    state:'regulated',   score:{regulated:3}},
+      {word:'🌋 VOLCANO',  state:'hyperactive', score:{hyperactive:2,frustrated:2}},
+      {word:'❄️ FROZEN',   state:'foggy',       score:{foggy:2,anxious:2}},
+    ]
+  },
+  {
+    q:'Your body feels...',
+    options:[
+      {word:'⚡ ELECTRIC', state:'hyperactive', score:{hyperactive:3}},
+      {word:'🪨 HEAVY',    state:'foggy',       score:{foggy:3}},
+      {word:'🔒 TIGHT',    state:'anxious',     score:{anxious:3}},
+      {word:'🌀 BUZZING',  state:'hyperactive', score:{hyperactive:2,anxious:1}},
+      {word:'😤 TENSE',    state:'frustrated',  score:{frustrated:3}},
+      {word:'😌 EASY',     state:'regulated',   score:{regulated:3}},
+    ]
+  },
+  {
+    q:'Right now you want to...',
+    options:[
+      {word:'💨 GO FASTER', state:'hyperactive', score:{hyperactive:3}},
+      {word:'🛌 HIDE',      state:'foggy',       score:{foggy:2,anxious:2}},
+      {word:'👊 FIGHT',     state:'frustrated',  score:{frustrated:3}},
+      {word:'😴 SLEEP',     state:'foggy',       score:{foggy:3}},
+      {word:'😤 SCREAM',    state:'frustrated',  score:{frustrated:2,hyperactive:2}},
+      {word:'🎯 FOCUS',     state:'regulated',   score:{regulated:3}},
+    ]
+  }
+];
+
+/* ========================================
+   REGULATION TOOLS
+======================================== */
+const REG_TOOLS = {
+  breathe:{
+    title:'BOX BREATHING',emoji:'💨',color:'#2de8cc',xp:30,
+    desc:'Your nervous system is activated. 4 counts in, hold, out, hold — this physically slows your heart rate.',
+    phases:[{l:'IN',d:4},{l:'HOLD',d:4},{l:'OUT',d:4},{l:'HOLD',d:2}],
+    cycles:3
+  },
+  shake:{
+    title:'BODY SHAKE',emoji:'🫨',color:'#ff6b6b',xp:20,
+    desc:'Frustration stores in the body. 30 seconds of shaking literally discharges built-up stress hormones.',
+    duration:30
+  },
+  move:{
+    title:'10 JUMP BLASTS',emoji:'⭐',color:'#fbbf24',xp:20,
+    desc:'Low energy needs a jumpstart. 10 jumping jacks triggers dopamine and wakes up your prefrontal cortex.',
+    count:10
+  },
+  volcano:{
+    title:'VOLCANO BREATH',emoji:'🌋',color:'#ff6b6b',xp:25,
+    desc:'High energy needs channelling. Breathe in through your nose, ROAR out through your mouth. 5 times.',
+    phases:[{l:'BREATHE IN',d:3},{l:'ROAR OUT',d:2}],
+    cycles:5
+  }
 };
 
-/* ═══════════════════════════════════════
+/* ========================================
    GAME STATE
-═══════════════════════════════════════ */
-let state = {
-  screen: "title",
-  biome: "flow",
-  xp: 0,
-  sessionXP: 0,
-  score: 0,
-  distance: 0,
-  checkpointDist: 400,
-  nextCheckpoint: 400,
-  lastSnap: null,
-  speed: 5,
-  running: false,
-  snapCount: 0,
+======================================== */
+let G = {
+  running:false, screen:'title',
+  biome:'diagnostic', currentBiome:'diagnostic',
+  xp:0, sessionXP:0, distance:0,
+  speed:4.5, nextCP:500, cpGap:600,
+  snapCount:0, crashCount:0,
+  diagData:{reactionTimes:[],jumpCount:0,doubleJumps:0,slideCount:0,firstCrashDist:0},
+  snapScores:{hyperactive:0,anxious:0,foggy:0,frustrated:0,regulated:0},
+  detectedState:null, totalXP:0
 };
+let currentBiome = 'diagnostic';
+let animId = null;
+let lastTime = 0;
 
-/* ═══════════════════════════════════════
-   CANVAS SETUP
-═══════════════════════════════════════ */
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-
-/* ═══════════════════════════════════════
+/* ========================================
    HERO
-═══════════════════════════════════════ */
+======================================== */
 const hero = {
-  x: HERO_X, y: GROUND_Y - 60,
-  vy: 0, vx: 0,
-  w: 36, h: 56,
-  onGround: true,
-  jumping: false,
-  sliding: false,
-  slideTimer: 0,
-  trailParticles: [],
-  frameTimer: 0,
-  frame: 0,
-  crashed: false,
-  invincible: 0,
-  jumpCount: 0,
+  x:HX, y:GY-60, vy:0, w:34, h:54,
+  onGround:true, jumping:false, sliding:false, slideTimer:0,
+  crashed:false, invincible:0, jumpCount:0,
+  frame:0, frameTimer:0,
+  trail:[],
+  lastJumpTime:0,
 
-  jump() {
-    if (this.jumpCount < 2 && !this.crashed) {
-      this.vy = -16;
-      this.onGround = false;
-      this.jumping = true;
-      this.jumpCount++;
-      spawnJumpBurst(this.x + this.w/2, this.y);
+  jump(){
+    if(this.jumpCount<2&&!this.crashed){
+      const now=performance.now();
+      const rt=this.lastJumpTime>0?now-this.lastJumpTime:0;
+      if(rt>0&&rt<2000)G.diagData.reactionTimes.push(rt);
+      this.lastJumpTime=now;
+      this.vy=-15; this.onGround=false; this.jumping=true; this.jumpCount++;
+      G.diagData.jumpCount++;
+      if(this.jumpCount===2)G.diagData.doubleJumps++;
+      burst(this.x+this.w/2,this.y,BIOMES[G.biome].color,10);
     }
   },
-
-  slide() {
-    if (!this.onGround || this.crashed) return;
-    this.sliding = true;
-    this.slideTimer = 40;
+  slide(){
+    if(!this.onGround||this.crashed)return;
+    this.sliding=true; this.slideTimer=38;
+    G.diagData.slideCount++;
   },
-
-  update() {
-    if (this.crashed) return;
-    this.vy += 0.7;
-    this.y += this.vy;
-
-    if (this.y >= GROUND_Y - this.h) {
-      this.y = GROUND_Y - this.h;
-      this.vy = 0;
-      this.onGround = true;
-      this.jumping = false;
-      this.jumpCount = 0;
-    } else {
-      this.onGround = false;
-    }
-
-    if (this.sliding) {
-      this.slideTimer--;
-      if (this.slideTimer <= 0) this.sliding = false;
-    }
-
-    if (this.invincible > 0) this.invincible--;
-
-    // Trail
-    const biome = BIOMES[state.biome];
-    this.trailParticles.push({
-      x: this.x + (this.sliding ? this.w : 4),
-      y: this.y + (this.sliding ? this.h*0.7 : this.h*0.4),
-      life: 18, maxLife: 18,
-      color: biome.particleColor,
-      vx: -(state.speed * 0.3 + Math.random()*1.5),
-      vy: (Math.random()-0.5) * 1.5,
-      r: Math.random()*5+3,
-    });
-
-    this.trailParticles = this.trailParticles
-      .map(p => ({...p, x:p.x+p.vx, y:p.y+p.vy, life:p.life-1}))
-      .filter(p => p.life > 0);
-
-    this.frameTimer++;
-    if (this.frameTimer > 6) { this.frame = (this.frame+1)%4; this.frameTimer=0; }
+  update(){
+    if(this.crashed)return;
+    this.vy+=0.72; this.y+=this.vy;
+    if(this.y>=GY-this.h){this.y=GY-this.h;this.vy=0;this.onGround=true;this.jumping=false;this.jumpCount=0;}
+    else this.onGround=false;
+    if(this.sliding){this.slideTimer--;if(this.slideTimer<=0)this.sliding=false;}
+    if(this.invincible>0)this.invincible--;
+    const c=BIOMES[G.biome].particleColor;
+    this.trail.push({x:this.x+(this.sliding?this.w:2),y:this.y+(this.sliding?this.h*.7:this.h*.4),life:16,maxLife:16,color:c,vx:-(G.speed*.3+Math.random()*1.2),vy:(Math.random()-.5)*1.2,r:Math.random()*4+2});
+    this.trail=this.trail.map(p=>({...p,x:p.x+p.vx,y:p.y+p.vy,life:p.life-1})).filter(p=>p.life>0);
+    this.frameTimer++;if(this.frameTimer>6){this.frame=(this.frame+1)%4;this.frameTimer=0;}
   },
-
-  draw(ctx) {
-    const biome = BIOMES[state.biome];
-    const blink = this.invincible > 0 && Math.floor(this.invincible/4)%2===0;
-    if (blink) return;
-
-    // Trail particles
-    this.trailParticles.forEach(p => {
-      const a = p.life / p.maxLife;
-      ctx.save();
-      ctx.globalAlpha = a * 0.7;
-      ctx.fillStyle = p.color;
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = p.color;
-      ctx.beginPath();
-      ctx.ellipse(p.x, p.y, p.r * a, p.r * 0.5 * a, 0, 0, Math.PI*2);
-      ctx.fill();
-      ctx.restore();
-    });
-
-    const hx = this.x, hy = this.sliding ? this.y + this.h*0.4 : this.y;
-    const hh = this.sliding ? this.h*0.6 : this.h;
-    const hw = this.w;
-
-    ctx.save();
-    ctx.shadowBlur = 20;
-    ctx.shadowColor = biome.color;
-
-    // Body
-    ctx.fillStyle = biome.color;
-    ctx.beginPath();
-    rrect(ctx, hx+4, hy+18, hw-8, hh-18, 6);
-    ctx.fill();
-
-    // Cape / lightning trail
-    ctx.fillStyle = biome.color + "80";
-    ctx.beginPath();
-    if (!this.sliding) {
-      ctx.moveTo(hx, hy+20);
-      ctx.lineTo(hx-20-this.frame*2, hy+28);
-      ctx.lineTo(hx-12, hy+38);
-      ctx.lineTo(hx, hy+35);
-    }
-    ctx.closePath();
-    ctx.fill();
-
-    // Helmet
-    ctx.fillStyle = "#0d1535";
-    ctx.beginPath();
-    ctx.ellipse(hx+hw/2, hy+12, hw/2-2, 14, 0, 0, Math.PI*2);
-    ctx.fill();
-
-    // Visor
-    ctx.fillStyle = biome.color;
-    ctx.globalAlpha = 0.9;
-    ctx.beginPath();
-    ctx.ellipse(hx+hw/2, hy+13, hw/2-6, 9, 0, 0, Math.PI*2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
-    // Eyes glow
-    ctx.fillStyle = "#fff";
-    ctx.shadowBlur = 8;
-    ctx.shadowColor = "#fff";
-    ctx.fillRect(hx+hw/2-8, hy+10, 5, 4);
-    ctx.fillRect(hx+hw/2+3, hy+10, 5, 4);
-
-    // Lightning bolt on chest
-    ctx.fillStyle = "#fff";
-    ctx.shadowBlur = 12;
-    ctx.shadowColor = "#fbbf24";
-    ctx.beginPath();
-    ctx.moveTo(hx+hw/2, hy+24);
-    ctx.lineTo(hx+hw/2-5, hy+32);
-    ctx.lineTo(hx+hw/2-1, hy+32);
-    ctx.lineTo(hx+hw/2-3, hy+42);
-    ctx.lineTo(hx+hw/2+6, hy+30);
-    ctx.lineTo(hx+hw/2+2, hy+30);
-    ctx.lineTo(hx+hw/2+5, hy+24);
-    ctx.closePath();
-    ctx.fill();
-
-    // Legs (running animation)
-    if (!this.sliding) {
-      const legOffset = Math.sin(this.frame * 1.6) * 8;
-      ctx.fillStyle = biome.color;
-      ctx.shadowBlur = 0;
-      ctx.fillRect(hx+4, hy+hh-16, 10, 16+legOffset);
-      ctx.fillRect(hx+hw-14, hy+hh-16, 10, 16-legOffset);
-    }
-
-    ctx.restore();
-
-    // Speed lines when fast
-    if (state.speed > 6) {
-      ctx.save();
-      ctx.strokeStyle = biome.color;
-      ctx.globalAlpha = (state.speed - 6) / 6 * 0.4;
-      ctx.lineWidth = 1.5;
-      for (let i = 0; i < 5; i++) {
-        const ly = hy + 10 + i * 10;
-        const len = 20 + i * 8;
-        ctx.beginPath();
-        ctx.moveTo(hx - len, ly);
-        ctx.lineTo(hx - 5, ly);
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
-  },
-
-  getHitbox() {
-    const sh = this.sliding ? this.h*0.6 : this.h;
-    const sy = this.sliding ? this.y + this.h*0.4 : this.y;
-    return { x:this.x+6, y:sy+4, w:this.w-12, h:sh-8 };
+  getHB(){
+    const sy=this.sliding?this.y+this.h*.4:this.y;
+    const sh=this.sliding?this.h*.6:this.h;
+    return{x:this.x+6,y:sy+4,w:this.w-12,h:sh-8};
   }
 };
 
-/* ═══════════════════════════════════════
+function resetHero(){
+  hero.x=HX;hero.y=GY-hero.h;hero.vy=0;hero.onGround=true;
+  hero.jumping=false;hero.sliding=false;hero.crashed=false;
+  hero.invincible=0;hero.jumpCount=0;hero.trail=[];hero.lastJumpTime=0;
+  hero.frame=0;hero.frameTimer=0;
+}
+
+/* ========================================
+   DRAW HERO
+======================================== */
+function drawHeroAt(c,hx,hy,size,color,frame){
+  const hw=size*.65,hh=size;
+  const sl=false;
+  c.save();
+  c.shadowBlur=18;c.shadowColor=color;
+  // trail
+  if(hero.trail&&c===ctx){
+    hero.trail.forEach(p=>{
+      const a=p.life/p.maxLife;
+      c.globalAlpha=a*.7;c.fillStyle=p.color;c.shadowBlur=8;c.shadowColor=p.color;
+      c.beginPath();c.ellipse(p.x,p.y,p.r*a,p.r*.5*a,0,0,Math.PI*2);c.fill();
+    });
+    c.globalAlpha=1;
+  }
+  if(hero.invincible>0&&c===ctx&&Math.floor(hero.invincible/4)%2===0){c.restore();return;}
+  // body
+  c.fillStyle=color;
+  rr(c,hx+4,hy+18,hw-8,hh-18,5);c.fill();
+  // cape
+  c.fillStyle=color+'70';
+  c.beginPath();c.moveTo(hx,hy+20);c.lineTo(hx-18-(frame||0)*2,hy+28);c.lineTo(hx-10,hy+38);c.lineTo(hx,hy+34);c.closePath();c.fill();
+  // helmet
+  c.fillStyle='#0d1535';c.shadowBlur=0;
+  c.beginPath();c.ellipse(hx+hw/2,hy+12,hw/2-1,13,0,0,Math.PI*2);c.fill();
+  // visor
+  c.fillStyle=color;c.globalAlpha=.9;
+  c.beginPath();c.ellipse(hx+hw/2,hy+13,hw/2-5,9,0,0,Math.PI*2);c.fill();
+  c.globalAlpha=1;
+  // eyes
+  c.fillStyle='#fff';c.shadowBlur=6;c.shadowColor='#fff';
+  c.fillRect(hx+hw/2-7,hy+10,4,4);c.fillRect(hx+hw/2+3,hy+10,4,4);
+  // bolt
+  c.fillStyle='#fff';c.shadowColor='#fbbf24';c.shadowBlur=10;
+  c.beginPath();c.moveTo(hx+hw/2,hy+24);c.lineTo(hx+hw/2-4,hy+32);c.lineTo(hx+hw/2-1,hy+32);c.lineTo(hx+hw/2-3,hy+40);c.lineTo(hx+hw/2+5,hy+29);c.lineTo(hx+hw/2+1,hy+29);c.lineTo(hx+hw/2+4,hy+24);c.closePath();c.fill();
+  // legs
+  if(!hero.sliding||c!==ctx){
+    const lo=Math.sin((frame||0)*1.6)*7;
+    c.fillStyle=color;c.shadowBlur=0;
+    c.fillRect(hx+4,hy+hh-14,9,14+lo);c.fillRect(hx+hw-13,hy+hh-14,9,14-lo);
+  }
+  c.restore();
+}
+
+/* ========================================
+   PARTICLES
+======================================== */
+let particles=[];
+function burst(x,y,color,n){
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2;
+    particles.push({x,y,vx:Math.cos(a)*(2+Math.random()*5),vy:Math.sin(a)*(2+Math.random()*5)-2,life:28,maxLife:28,color,r:3+Math.random()*4});
+  }
+}
+function updateParticles(){
+  particles=particles.map(p=>({...p,x:p.x+p.vx,y:p.y+p.vy,vy:p.vy+.25,life:p.life-1})).filter(p=>p.life>0);
+}
+function drawParticles(){
+  particles.forEach(p=>{
+    const a=p.life/p.maxLife;
+    ctx.save();ctx.globalAlpha=a;ctx.fillStyle=p.color;ctx.shadowBlur=8;ctx.shadowColor=p.color;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r*a,0,Math.PI*2);ctx.fill();ctx.restore();
+  });
+}
+
+/* ========================================
    OBSTACLES
-═══════════════════════════════════════ */
-let obstacles = [];
-let obstacleCooldown = 0;
-
-const OBS_TYPES = [
-  { type:"spike",  w:28, h:32, color:"#ff4444" },
-  { type:"wall",   w:20, h:65, color:"#6b7fa8" },
-  { type:"laser",  w:0,  h:22, color:"#ff6b6b", isLaser:true },
-  { type:"float",  w:32, h:28, color:"#fbbf24", isFloat:true },
-  { type:"double", w:22, h:48, color:"#a78bfa", isDouble:true },
+======================================== */
+let obstacles=[], obsCooldown=120;
+const OBS_TYPES=[
+  {type:'spike',w:26,h:30,color:'#ff4444'},
+  {type:'wall', w:18,h:62,color:'#6b7fa8'},
+  {type:'laser',w:0, h:20,color:'#ff6b6b',isLaser:true},
+  {type:'float',w:30,h:26,color:'#fbbf24',isFloat:true},
+  {type:'double',w:20,h:46,color:'#a78bfa',isDouble:true},
+  {type:'gem',  w:24,h:24,color:'#2de8cc',isGem:true},  // collectible in fog world
 ];
 
-function spawnObstacle() {
-  if (obstacleCooldown > 0) { obstacleCooldown--; return; }
-  obstacleCooldown = 90 + Math.floor(Math.random() * 70);
-
-  let typePool;
-  if      (state.distance < 300) typePool = [0,0,1,1];
-  else if (state.distance < 700) typePool = [0,0,1,1,3];
-  else                           typePool = [0,1,1,2,3,4];
-
-  const idx = typePool[Math.floor(Math.random()*typePool.length)];
-  const t   = OBS_TYPES[idx];
-  const obs = { ...t, x: W + 30 };
-
-  if (obs.isLaser) {
-    obs.w        = W;
-    obs.y        = GROUND_Y - 85;
-    obs.warnTimer = 90;
-  } else if (obs.isFloat) {
-    obs.y = GROUND_Y - 110;
-  } else if (obs.isDouble) {
-    obs.y  = GROUND_Y - obs.h;
-    obs.x2 = W + 90;
+function spawnObs(){
+  if(obsCooldown>0){obsCooldown--;return;}
+  obsCooldown=85+Math.floor(Math.random()*70);
+  let pool;
+  const d=G.distance;
+  const b=G.biome;
+  if(b==='diagnostic'){
+    // Diagnostic: gentle ramp, engineer first crash around 300-500m
+    if(d<150)pool=[0,0,1];
+    else if(d<350)pool=[0,0,1,1,3];
+    else pool=[0,1,1,2,3,4];
+  } else if(b==='volcano'){
+    // Volcano: fast, lots of precise jumps needed
+    pool=[0,0,0,1,2,3,4];
+    obsCooldown=60+Math.floor(Math.random()*50);
+  } else if(b==='ocean'){
+    // Ocean: rhythm patterns
+    pool=[0,1,1,1,3,2];
+    obsCooldown=95+Math.floor(Math.random()*60);
+  } else if(b==='fog'){
+    // Fog: mostly gems, few obstacles
+    pool=[0,1,5,5,5,3];
+    obsCooldown=100+Math.floor(Math.random()*80);
   } else {
-    obs.y = GROUND_Y - obs.h;
+    pool=[0,0,1,2,3,4];
   }
-  obstacles.push(obs);
+  const t={...OBS_TYPES[pool[Math.floor(Math.random()*pool.length)]]};
+  t.x=W+30;
+  if(t.isLaser){t.w=W;t.y=GY-84;t.warnTimer=90;}
+  else if(t.isFloat){t.y=GY-108;}
+  else if(t.isDouble){t.y=GY-t.h;t.x2=W+95;}
+  else if(t.isGem){t.y=GY-80-Math.random()*120;} // floating gems
+  else{t.y=GY-t.h;}
+  obstacles.push(t);
 }
 
-/* ═══════════════════════════════════════
-   PARTICLES / EFFECTS
-═══════════════════════════════════════ */
-let particles = [];
-let burstParticles = [];
-let groundParticles = [];
+/* ========================================
+   BACKGROUND
+======================================== */
+let bgStars=Array.from({length:120},()=>({x:Math.random()*W*2,y:Math.random()*H,r:Math.random()*1.5+.3,op:Math.random()*.6+.2}));
+let bgX=0;
 
-function spawnJumpBurst(x, y) {
-  const biome = BIOMES[state.biome];
-  for (let i = 0; i < 12; i++) {
-    const angle = (Math.PI * 2 / 12) * i;
-    burstParticles.push({
-      x, y, life: 20, maxLife: 20,
-      vx: Math.cos(angle) * (3 + Math.random()*3),
-      vy: Math.sin(angle) * (3 + Math.random()*3),
-      color: biome.color, r: 3 + Math.random()*3,
-    });
-  }
-}
-
-function spawnCrashBurst(x, y) {
-  for (let i = 0; i < 30; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    burstParticles.push({
-      x, y, life: 40, maxLife: 40,
-      vx: Math.cos(angle) * (2 + Math.random()*8),
-      vy: Math.sin(angle) * (2 + Math.random()*8) - 3,
-      color: ["#ff6b6b","#fbbf24","#fff"][Math.floor(Math.random()*3)],
-      r: 4 + Math.random()*6,
-    });
-  }
-}
-
-/* ═══════════════════════════════════════
-   BACKGROUND LAYERS
-═══════════════════════════════════════ */
-let bgLayers = [
-  { x:0, speed:0.3, elements:[] },
-  { x:0, speed:0.6, elements:[] },
-  { x:0, speed:1.2, elements:[] },
-];
-
-function initBGLayers() {
-  bgLayers[0].elements = Array.from({length:30}, ()=>({x:Math.random()*W*2,y:Math.random()*(H-200),r:Math.random()*1.5+0.5,opacity:Math.random()*0.5+0.2}));
-  bgLayers[1].elements = Array.from({length:12}, ()=>({x:Math.random()*W*2,y:50+Math.random()*(H-300),w:Math.random()*80+20,h:Math.random()*40+10,opacity:Math.random()*0.15+0.05}));
-  bgLayers[2].elements = Array.from({length:8}, ()=>({x:Math.random()*W*2,y:Math.random()*(H-400)+50,w:Math.random()*30+8,h:Math.random()*200+50,opacity:Math.random()*0.1+0.03}));
-}
-
-/* ═══════════════════════════════════════
-   GROUND TILES
-═══════════════════════════════════════ */
-let groundX = 0;
-
-/* ═══════════════════════════════════════
-   CHECKPOINT GATE
-═══════════════════════════════════════ */
-let gate = null;
-let gateTimer = 0;
-
-function spawnGate() {
-  gate = { x: W + 60, triggered: false };
-}
-
-/* ═══════════════════════════════════════
-   DRAW FUNCTIONS
-═══════════════════════════════════════ */
-function drawBackground() {
-  const biome = BIOMES[state.biome];
-
-  // Sky gradient
-  const grad = ctx.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, biome.sky1);
-  grad.addColorStop(0.6, biome.sky2);
-  grad.addColorStop(1, biome.ground);
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, H);
-
-  // Stars (layer 0)
-  bgLayers[0].elements.forEach(s => {
-    const sx = ((s.x - bgLayers[0].x * s.opacity * 200) % (W * 1.5) + W * 1.5) % (W * 1.5);
-    ctx.save();
-    ctx.globalAlpha = s.opacity;
-    ctx.fillStyle = "#fff";
-    ctx.beginPath();
-    ctx.arc(sx, s.y, s.r, 0, Math.PI*2);
-    ctx.fill();
-    ctx.restore();
+function drawBG(){
+  const b=BIOMES[G.biome];
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,b.sky1);g.addColorStop(.65,b.sky2);g.addColorStop(1,b.ground);
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  // stars
+  bgStars.forEach(s=>{
+    const sx=((s.x-bgX*.5)%(W*2)+W*2)%(W*2);
+    ctx.save();ctx.globalAlpha=s.op;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(sx,s.y,s.r,0,Math.PI*2);ctx.fill();ctx.restore();
   });
-
-  // Mid clouds (layer 1)
-  bgLayers[1].elements.forEach(c => {
-    const cx = ((c.x - bgLayers[1].x * 80) % (W * 2) + W * 2) % (W * 2);
-    ctx.save();
-    ctx.globalAlpha = c.opacity;
-    ctx.fillStyle = biome.color;
-    ctx.filter = "blur(8px)";
-    ctx.fillRect(cx, c.y, c.w, c.h);
-    ctx.restore();
-  });
-
-  // Near structures (layer 2)
-  bgLayers[2].elements.forEach(b => {
-    const bx = ((b.x - bgLayers[2].x * 160) % (W * 2) + W * 2) % (W * 2);
-    ctx.save();
-    ctx.globalAlpha = b.opacity;
-    ctx.fillStyle = biome.accent;
-    ctx.fillRect(bx, H - 120 - b.h, b.w, b.h);
-    ctx.restore();
-  });
+  // ground
+  bgX+=G.speed;
+  ctx.fillStyle=b.ground;ctx.fillRect(0,GY,W,H-GY);
+  const gl=ctx.createLinearGradient(0,GY,0,GY+25);
+  gl.addColorStop(0,b.color+'25');gl.addColorStop(1,'transparent');
+  ctx.fillStyle=gl;ctx.fillRect(0,GY,W,25);
+  ctx.strokeStyle=b.color+'35';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(0,GY);ctx.lineTo(W,GY);ctx.stroke();
+  // ground grid
+  ctx.strokeStyle=b.color+'15';ctx.lineWidth=1;
+  for(let x=(-(bgX%60));x<W;x+=60){ctx.beginPath();ctx.moveTo(x,GY);ctx.lineTo(x,H);ctx.stroke();}
 }
 
-function drawGround() {
-  const biome = BIOMES[state.biome];
-  groundX = (groundX - state.speed) % 60;
-
-  // Ground base
-  ctx.fillStyle = biome.ground;
-  ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
-
-  // Ground line
-  ctx.strokeStyle = biome.color + "40";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(0, GROUND_Y);
-  ctx.lineTo(W, GROUND_Y);
-  ctx.stroke();
-
-  // Ground tiles
-  ctx.strokeStyle = biome.color + "20";
-  ctx.lineWidth = 1;
-  for (let x = groundX; x < W; x += 60) {
-    ctx.beginPath();
-    ctx.moveTo(x, GROUND_Y);
-    ctx.lineTo(x, H);
-    ctx.stroke();
-  }
-
-  // Ground glow
-  const gg = ctx.createLinearGradient(0, GROUND_Y, 0, GROUND_Y + 30);
-  gg.addColorStop(0, biome.color + "30");
-  gg.addColorStop(1, "transparent");
-  ctx.fillStyle = gg;
-  ctx.fillRect(0, GROUND_Y, W, 30);
-}
-
-function drawObstacles() {
-  const biome = BIOMES[state.biome];
-
-  obstacles.forEach(obs => {
-    ctx.save();
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = obs.color;
-
-    if (obs.isLaser) {
-      if (obs.warnTimer > 0) {
-        // Warning flash
-        const alpha = (obs.warnTimer % 16 < 8) ? 0.8 : 0.2;
-        ctx.globalAlpha = alpha;
-        ctx.fillStyle = "#ff0000";
-        ctx.font = "bold 13px Orbitron";
-        ctx.textAlign = "center";
-        ctx.fillText("⚠ DUCK! ⚠", W/2, obs.y - 12);
-        ctx.fillStyle = obs.color + "40";
-        ctx.fillRect(0, obs.y, W, obs.h);
-        ctx.globalAlpha = 1;
+function drawObs(){
+  const b=BIOMES[G.biome];
+  obstacles.forEach(o=>{
+    ctx.save();ctx.shadowBlur=14;ctx.shadowColor=o.color;
+    if(o.isLaser){
+      if(o.warnTimer>0){
+        const a=(o.warnTimer%16<8)?.85:.2;
+        ctx.globalAlpha=a;ctx.fillStyle='#ff0000';
+        ctx.font='bold 12px Orbitron';ctx.textAlign='center';
+        ctx.fillText('⚠ DUCK! ⚠',W/2,o.y-10);
+        ctx.fillStyle=o.color+'30';ctx.fillRect(0,o.y,W,o.h);
       } else {
-        ctx.fillStyle = obs.color;
-        ctx.fillRect(0, obs.y, W, obs.h);
-        // Laser core
-        const lg = ctx.createLinearGradient(0, obs.y, 0, obs.y+obs.h);
-        lg.addColorStop(0, "#fff");
-        lg.addColorStop(0.5, obs.color);
-        lg.addColorStop(1, "#fff");
-        ctx.fillStyle = lg;
-        ctx.fillRect(0, obs.y + obs.h/2 - 2, W, 4);
+        ctx.fillStyle=o.color;ctx.fillRect(0,o.y,W,o.h);
+        ctx.fillStyle='#fff';ctx.fillRect(0,o.y+o.h/2-2,W,4);
       }
-    } else if (obs.type === "spike") {
-      ctx.fillStyle = obs.color;
-      const n = 3;
-      for (let i = 0; i < n; i++) {
-        const sx = obs.x + i * (obs.w/n);
-        ctx.beginPath();
-        ctx.moveTo(sx, obs.y + obs.h);
-        ctx.lineTo(sx + obs.w/(n*2), obs.y);
-        ctx.lineTo(sx + obs.w/n, obs.y + obs.h);
-        ctx.closePath();
-        ctx.fill();
+    } else if(o.type==='spike'){
+      ctx.fillStyle=o.color;
+      for(let i=0;i<3;i++){
+        const sx=o.x+i*(o.w/3);
+        ctx.beginPath();ctx.moveTo(sx,o.y+o.h);ctx.lineTo(sx+o.w/6,o.y);ctx.lineTo(sx+o.w/3,o.y+o.h);ctx.closePath();ctx.fill();
       }
+    } else if(o.isGem){
+      // rotating gem collectible
+      ctx.fillStyle=o.color;ctx.shadowBlur=20;
+      const gs=10+Math.sin(Date.now()/400)*2;
+      ctx.beginPath();ctx.moveTo(o.x+o.w/2,o.y);ctx.lineTo(o.x+o.w,o.y+o.h/2);ctx.lineTo(o.x+o.w/2,o.y+o.h);ctx.lineTo(o.x,o.y+o.h/2);ctx.closePath();ctx.fill();
     } else {
-      ctx.fillStyle = obs.color + "dd";
-      ctx.beginPath();
-      rrect(ctx, obs.x, obs.y, obs.w, obs.h, 4);
-      ctx.fill();
-      // Glow edge
-      ctx.strokeStyle = obs.color;
-      ctx.lineWidth = 2;
-      ctx.stroke();
+      ctx.fillStyle=o.color+'cc';
+      rr(ctx,o.x,o.y,o.w,o.h,4);ctx.fill();
+      ctx.strokeStyle=o.color;ctx.lineWidth=2;ctx.stroke();
+      if(o.isDouble){rr(ctx,o.x2,o.y,o.w,o.h,4);ctx.fill();}
     }
-
-    if (obs.isDouble) {
-      ctx.fillStyle = obs.color + "dd";
-      ctx.beginPath();
-      rrect(ctx, obs.x2, obs.y, obs.w, obs.h, 4);
-      ctx.fill();
-    }
-
     ctx.restore();
   });
 }
 
-function drawGate() {
-  if (!gate) return;
-  const biome = BIOMES[state.biome];
-  ctx.save();
-  // Portal frame
-  ctx.shadowBlur = 30;
-  ctx.shadowColor = "#2de8cc";
-  ctx.strokeStyle = "#2de8cc";
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  rrect(ctx, gate.x - 4, GROUND_Y - 130, 50, 130, 10);
-  ctx.stroke();
-
-  // Portal fill
-  const pg = ctx.createLinearGradient(gate.x, GROUND_Y-130, gate.x+42, GROUND_Y);
-  pg.addColorStop(0, "#2de8cc20");
-  pg.addColorStop(0.5, "#2de8cc40");
-  pg.addColorStop(1, "#2de8cc20");
-  ctx.fillStyle = pg;
-  ctx.beginPath();
-  rrect(ctx, gate.x - 4, GROUND_Y - 130, 50, 130, 10);
-  ctx.fill();
-
-  // BREATHE text
-  ctx.fillStyle = "#2de8cc";
-  ctx.shadowBlur = 10;
-  ctx.font = "bold 9px Orbitron";
-  ctx.textAlign = "center";
-  ctx.fillText("WARP", gate.x + 21, GROUND_Y - 80);
-  ctx.fillText("GATE", gate.x + 21, GROUND_Y - 65);
-
-  // ✦ icon
-  ctx.font = "22px sans-serif";
-  ctx.fillText("⚡", gate.x + 18, GROUND_Y - 44);
-  ctx.restore();
+/* ========================================
+   GAME LOOP
+======================================== */
+function gameLoop(ts){
+  if(!G.running)return;
+  try{
+    lastTime=ts;
+    const b=BIOMES[G.biome];
+    G.speed=Math.min(b.baseSpeed+G.distance*.004,b.speedCap);
+    // move obs
+    obstacles.forEach(o=>{o.x-=G.speed;if(o.x2)o.x2-=G.speed;if(o.isLaser&&o.warnTimer>0)o.warnTimer--;});
+    obstacles=obstacles.filter(o=>o.x>-80);
+    G.distance+=G.speed*.05;
+    // checkpoint
+    if(G.distance>=G.nextCP){
+      G.nextCP+=G.cpGap;G.cpGap=Math.max(350,G.cpGap-30);G.snapCount++;
+      G.running=false;cancelAnimationFrame(animId);
+      if(G.biome==='diagnostic'&&G.distance>200){
+        triggerCrash(true);// engineered first snap
+      } else {
+        triggerCrash(false);
+      }
+      return;
+    }
+    spawnObs();
+    hero.update();
+    checkHits();
+    updateParticles();
+    // draw
+    ctx.clearRect(0,0,W,H);
+    drawBG();
+    drawObs();
+    drawParticles();
+    drawHeroAt(ctx,hero.x,hero.y,hero.h,b.color,hero.frame);
+    drawHUD2();
+    animId=requestAnimationFrame(gameLoop);
+  }catch(e){console.error(e);}
 }
 
-function drawHints() {
-  // Always show control zones faintly at bottom
-  ctx.save();
-  ctx.globalAlpha = 0.07;
-  ctx.strokeStyle = "#ffffff";
-  ctx.lineWidth = 1;
-  ctx.setLineDash([4,4]);
-  ctx.beginPath();
-  ctx.moveTo(W * 0.67, GROUND_Y + 10);
-  ctx.lineTo(W * 0.67, H);
-  ctx.stroke();
+function drawHUD2(){
+  // distance pill
+  ctx.save();ctx.fillStyle='rgba(0,0,0,.45)';
+  rr(ctx,W/2-44,44,88,20,8);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='bold 11px Orbitron';ctx.textAlign='center';
+  ctx.fillText(Math.floor(G.distance)+'m',W/2,57);
+  // control hints (fade after 200m)
+  const a=Math.max(0,Math.min(.5,(200-G.distance)/200));
+  if(a>0){
+    ctx.globalAlpha=a;ctx.fillStyle='#fff';ctx.font='bold 11px Nunito';
+    ctx.fillText('TAP LEFT=JUMP   TAP RIGHT=SLIDE',W/2,H-22);
+  }
+  // zone divider
+  ctx.globalAlpha=.06;ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+  ctx.beginPath();ctx.moveTo(W*.67,GY+8);ctx.lineTo(W*.67,H);ctx.stroke();
   ctx.setLineDash([]);
   ctx.restore();
-
-  ctx.save();
-  ctx.globalAlpha = Math.max(0, Math.min(0.5, (200 - state.distance) / 200));
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 13px Orbitron";
-  ctx.textAlign = "center";
-  ctx.fillText("TAP LEFT = JUMP", W * 0.33, H - 20);
-  ctx.fillText("TAP RIGHT = SLIDE", W * 0.83, H - 20);
-  ctx.restore();
 }
 
-function drawBurstParticles() {
-  burstParticles = burstParticles.map(p => ({
-    ...p, x:p.x+p.vx, y:p.y+p.vy, vy:p.vy+0.3, life:p.life-1
-  })).filter(p=>p.life>0);
-
-  burstParticles.forEach(p => {
-    const a = p.life / p.maxLife;
-    ctx.save();
-    ctx.globalAlpha = a;
-    ctx.fillStyle = p.color;
-    ctx.shadowBlur = 8;
-    ctx.shadowColor = p.color;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r * a, 0, Math.PI*2);
-    ctx.fill();
-    ctx.restore();
-  });
-}
-
-function drawDistanceMarker() {
-  ctx.save();
-  ctx.fillStyle = "rgba(0,0,0,0.4)";
-  ctx.beginPath();
-  rrect(ctx, W/2 - 50, 48, 100, 22, 8);
-  ctx.fill();
-  ctx.fillStyle = "#fff";
-  ctx.font = "bold 12px Orbitron";
-  ctx.textAlign = "center";
-  ctx.fillText(`${Math.floor(state.distance)}m`, W/2, 63);
-  ctx.restore();
-}
-
-/* ═══════════════════════════════════════
-   COLLISION
-═══════════════════════════════════════ */
-function checkCollisions() {
-  if (hero.invincible > 0 || hero.crashed) return;
-  const hb = hero.getHitbox();
-
-  for (const obs of obstacles) {
-    if (obs.isLaser && obs.warnTimer > 0) continue;
-
-    let hit = false;
-    if (obs.isLaser) {
-      hit = hb.y + hb.h > obs.y && hb.y < obs.y + obs.h;
-    } else {
-      hit = hb.x < obs.x + obs.w && hb.x + hb.w > obs.x &&
-            hb.y < obs.y + obs.h && hb.y + hb.h > obs.y;
-      if (!hit && obs.isDouble) {
-        hit = hb.x < obs.x2 + obs.w && hb.x + hb.w > obs.x2 &&
-              hb.y < obs.y + obs.h && hb.y + hb.h > obs.y;
-      }
-    }
-
-    if (hit) {
-      spawnCrashBurst(hero.x + hero.w/2, hero.y + hero.h/2);
-      hero.crashed = true;
-      setTimeout(()=>triggerGameOver(), 800);
-      return;
-    }
-  }
-
-  // Gate collision
-  if (gate && !gate.triggered) {
-    if (hero.x + hero.w > gate.x && hero.x < gate.x + 42) {
-      gate.triggered = true;
-      triggerBreatheGate();
-    }
-  }
-}
-
-/* ═══════════════════════════════════════
-   GAME LOOP
-═══════════════════════════════════════ */
-let lastTime = 0;
-let animId = null;
-
-function gameLoop(ts) {
-  if (!state.running) return;
-  try {
-  const dt = Math.min((ts - lastTime) / 16.67, 3);
-  lastTime = ts;
-
-  const biome = BIOMES[state.biome];
-
-  // Speed ramp
-  state.speed = Math.min(biome.speed + state.distance * 0.003, biome.speed * 1.8);
-
-  // Move obstacles
-  obstacles.forEach(obs => {
-    obs.x -= state.speed;
-    if (obs.isDouble) obs.x2 -= state.speed;
-    if (obs.isLaser && obs.warnTimer > 0) obs.warnTimer--;
-  });
-  obstacles = obstacles.filter(obs => obs.x > -60);
-
-  // Move gate
-  if (gate) {
-    gate.x -= state.speed;
-    if (gate.x < -60) gate = null;
-  }
-
-  // Scroll BG
-  bgLayers.forEach((l,i) => l.x += [0.003, 0.008, 0.015][i] * state.speed);
-
-  // Distance
-  state.distance += state.speed * 0.05;
-
-  // Checkpoint
-  if (state.distance >= state.nextCheckpoint && !gate) {
-    state.nextCheckpoint += state.checkpointDist;
-    state.checkpointDist = Math.max(200, state.checkpointDist - 20);
-    state.snapCount++;
-
-    if (state.snapCount % 2 === 0) {
-      spawnGate();
-    } else {
-      pauseForSnap();
-      return;
-    }
-  }
-
-  spawnObstacle();
-  hero.update();
-  checkCollisions();
-
-  // Draw
-  ctx.clearRect(0, 0, W, H);
-  drawBackground();
-  drawGround();
-  drawGate();
-  drawObstacles();
-  drawBurstParticles();
-  hero.draw(ctx);
-  drawDistanceMarker();
-  drawHints();
-
-  // Update HUD
-  document.getElementById("hudScore").textContent = `${Math.floor(state.distance)}m`;
-  document.getElementById("hudXP").textContent = `⚡ ${state.xp + state.sessionXP} XP`;
-  state.sessionXP = Math.floor(state.distance * 0.5 + (state.snapCount * 15));
-
-  animId = requestAnimationFrame(gameLoop);
-  } catch(e) { console.error('Loop:',e.message); }
-}
-
-/* ═══════════════════════════════════════
-   SNAP ASSESSMENT
-═══════════════════════════════════════ */
-let snapTimerInterval = null;
-let snapTimeLeft = 5;
-
-function pauseForSnap() {
-  state.running = false;
-  if (animId) cancelAnimationFrame(animId);
-  showScreen("snapScreen");
-  runSnapAssessment();
-}
-
-function runSnapAssessment() {
-  const words = [...SNAP_WORDS.high, ...SNAP_WORDS.mid];
-  const shuffled = words.sort(()=>Math.random()-0.5).slice(0, 8);
-
-  const container = document.getElementById("snapWords");
-  container.innerHTML = "";
-  shuffled.forEach(item => {
-    const btn = document.createElement("button");
-    btn.className = "snap-word";
-    btn.textContent = item.word;
-    btn.onclick = () => handleSnapSelect(item, btn);
-    container.appendChild(btn);
-  });
-
-  snapTimeLeft = 6;
-  const fill = document.getElementById("snapTimerFill");
-  fill.style.width = "100%";
-  fill.style.transition = "none";
-
-  clearInterval(snapTimerInterval);
-  snapTimerInterval = setInterval(() => {
-    snapTimeLeft -= 0.1;
-    const pct = Math.max(0, (snapTimeLeft / 6) * 100);
-    fill.style.transition = "width 0.1s linear";
-    fill.style.width = pct + "%";
-    if (snapTimeLeft <= 0) {
-      clearInterval(snapTimerInterval);
-      // Auto-select random if no pick
-      applySnapResult("flow");
-    }
-  }, 100);
-}
-
-function handleSnapSelect(item, btn) {
-  clearInterval(snapTimerInterval);
-  btn.style.background = BIOMES[item.state].color + "40";
-  btn.style.borderColor = BIOMES[item.state].color;
-  btn.style.transform = "scale(1.12)";
-  state.lastSnap = item.state;
-  setTimeout(()=>applySnapResult(item.state), 600);
-}
-
-function applySnapResult(snapState) {
-  state.lastSnap = snapState;
-
-  // Adapt biome based on snap
-  const adaptMap = {
-    rocket: "flow",   // too high → bring to flow
-    buzz:   "flow",   // still high → bring to flow
-    flow:   "flow",   // perfect → stay
-    foggy:  "buzz",   // low → boost
-    stuck:  "buzz",   // stuck → boost
-  };
-  state.biome = adaptMap[snapState] || "flow";
-
-  // Update HUD state indicator
-  const hudState = document.getElementById("hudState");
-  const biome = BIOMES[state.biome];
-  hudState.textContent = biome.label;
-  hudState.style.background = biome.color + "30";
-  hudState.style.color = biome.color;
-  hudState.style.border = `1px solid ${biome.color}50`;
-
-  resumeGame();
-}
-
-/* ═══════════════════════════════════════
-   BREATHE GATE
-═══════════════════════════════════════ */
-let breatheInterval = null;
-let breathePhaseIdx = 0;
-let breatheCount = 4;
-let breatheCyclesDone = 0;
-const BREATHE_PHASES = [
-  {label:"BREATHE IN", color:"#2de8cc", dur:4},
-  {label:"HOLD",       color:"#fbbf24", dur:4},
-  {label:"BREATHE OUT",color:"#818cf8", dur:4},
-  {label:"HOLD",       color:"#38bdf8", dur:2},
-];
-
-function triggerBreatheGate() {
-  state.running = false;
-  if (animId) cancelAnimationFrame(animId);
-  showScreen("breatheScreen");
-  startBreathe();
-}
-
-function startBreathe() {
-  breathePhaseIdx = 0;
-  breatheCyclesDone = 0;
-  breatheCount = BREATHE_PHASES[0].dur;
-  updateBreatheUI();
-
-  const ring = document.getElementById("breatheRing");
-  ring.style.boxShadow = `0 0 60px #2de8cc60`;
-  ring.style.border = `3px solid #2de8cc`;
-  ring.style.background = `radial-gradient(circle, #2de8cc15, transparent)`;
-
-  const dots = document.getElementById("breatheDots");
-  dots.innerHTML = "";
-  for (let i = 0; i < 3; i++) {
-    const d = document.createElement("div");
-    d.id = `bdot${i}`;
-    d.style.cssText = `width:12px;height:12px;border-radius:50%;background:#111828;border:2px solid #2de8cc40;transition:background .3s;`;
-    dots.appendChild(d);
-  }
-
-  clearInterval(breatheInterval);
-  breatheInterval = setInterval(tickBreathe, 1000);
-}
-
-function tickBreathe() {
-  breatheCount--;
-  if (breatheCount <= 0) {
-    breathePhaseIdx = (breathePhaseIdx + 1) % BREATHE_PHASES.length;
-    if (breathePhaseIdx === 0) {
-      breatheCyclesDone++;
-      document.getElementById(`bdot${Math.min(breatheCyclesDone-1,2)}`).style.background = "#2de8cc";
-      if (breatheCyclesDone >= 3) {
-        clearInterval(breatheInterval);
-        addSessionXP(30);
-        showToast("🌊 +30 XP — Breathe complete!");
-        setTimeout(resumeGame, 800);
+function checkHits(){
+  if(hero.invincible>0||hero.crashed)return;
+  const hb=hero.getHB();
+  for(const o of obstacles){
+    if(o.isLaser&&o.warnTimer>0)continue;
+    let hit=false;
+    if(o.isLaser){hit=hb.y+hb.h>o.y&&hb.y<o.y+o.h;}
+    else if(o.isGem){
+      // collect gem
+      if(hb.x<o.x+o.w&&hb.x+hb.w>o.x&&hb.y<o.y+o.h&&hb.y+hb.h>o.y){
+        burst(o.x+o.w/2,o.y+o.h/2,o.color,15);
+        G.sessionXP+=25;toast('+25 XP 💎');
+        obstacles=obstacles.filter(x=>x!==o);
         return;
       }
+    } else {
+      hit=hb.x<o.x+o.w&&hb.x+hb.w>o.x&&hb.y<o.y+o.h&&hb.y+hb.h>o.y;
+      if(!hit&&o.isDouble)hit=hb.x<o.x2+o.w&&hb.x+hb.w>o.x2&&hb.y<o.y+o.h&&hb.y+hb.h>o.y;
     }
-    breatheCount = BREATHE_PHASES[breathePhaseIdx].dur;
-    updateBreatheUI();
-  } else {
-    document.getElementById("breatheCount").textContent = breatheCount;
+    if(hit){
+      burst(hero.x+hero.w/2,hero.y+hero.h/2,'#ff6b6b',25);
+      hero.crashed=true;
+      if(G.diagData.firstCrashDist===0)G.diagData.firstCrashDist=G.distance;
+      G.crashCount++;
+      setTimeout(()=>{G.running=false;cancelAnimationFrame(animId);triggerCrash(false);},700);
+      return;
+    }
   }
 }
 
-function updateBreatheUI() {
-  const ph = BREATHE_PHASES[breathePhaseIdx];
-  document.getElementById("breatheCount").textContent = breatheCount;
-  document.getElementById("breathePhase").textContent = ph.label;
-  document.getElementById("breathePhase").style.color = ph.color;
-  const ring = document.getElementById("breatheRing");
-  ring.style.border = `3px solid ${ph.color}`;
-  ring.style.boxShadow = `0 0 60px ${ph.color}40`;
-  ring.style.transform = breathePhaseIdx === 0 || breathePhaseIdx === 1 ? "scale(1.15)" : "scale(1)";
-  ring.style.transition = `transform ${ph.dur}s ease, border .5s, box-shadow .5s`;
+/* ========================================
+   DIAGNOSTIC ANALYSIS
+======================================== */
+function analyseDiagnostic(){
+  const d=G.diagData;
+  const avgRT=d.reactionTimes.length>0?d.reactionTimes.reduce((a,b)=>a+b,0)/d.reactionTimes.length:500;
+  const djRatio=d.jumpCount>0?d.doubleJumps/d.jumpCount:0;
+  // Fast reactions + lots of double jumps = hyperactive/impulsive
+  // Slow reactions + few jumps = foggy
+  // Many slides = anxious/controlled
+  let scores={hyperactive:0,anxious:0,foggy:0,frustrated:0,regulated:0};
+  if(avgRT<350)scores.hyperactive+=3;
+  else if(avgRT<550)scores.regulated+=2;
+  else scores.foggy+=3;
+  if(djRatio>.5)scores.hyperactive+=2;
+  if(d.slideCount>2)scores.anxious+=2;
+  if(d.firstCrashDist<200)scores.frustrated+=2;
+  else if(d.firstCrashDist>400)scores.regulated+=2;
+  if(G.crashCount>3)scores.hyperactive+=1;
+  // merge with snap scores
+  Object.keys(scores).forEach(k=>scores[k]+=G.snapScores[k]||0);
+  return Object.entries(scores).sort((a,b)=>b[1]-a[1])[0][0];
 }
 
-/* ═══════════════════════════════════════
-/* ═══════════════════════════════════════
-   CRASH CHECK-IN — 3 STEP FLOW
-═══════════════════════════════════════ */
-function triggerGameOver() {
-  state.running = false;
-  if (animId) cancelAnimationFrame(animId);
-  const earned = Math.floor(state.distance * 0.5 + state.snapCount * 15);
-  state.xp += earned;
-  state._crashEarned = earned;
-  showScreen("gameoverScreen");
-  showCrashStep1();
+/* ========================================
+   CRASH -> REGULATION FLOW
+======================================== */
+let snapStep=0, snapAnswers=[];
+
+function triggerCrash(engineered){
+  const earned=Math.floor(G.distance*.5+G.snapCount*15);
+  G.sessionXP+=earned;
+  showScreen('sRegulate');
+  if(G.biome==='diagnostic'||engineered){
+    // After diagnostic run — do full 3-question snap
+    snapStep=0; snapAnswers=[];
+    showSnapQ(0);
+  } else {
+    // Mid-game crash — quick 1-question + regulation tool
+    showQuickRegulate();
+  }
 }
 
-function showCrashStep1() {
-  var msgs = {
-    rocket:"You were moving FAST — sometimes the engine outruns the brakes.",
-    buzz:"Lots of energy this run. Hard to slow down when buzzing.",
-    flow:"Even in flow state, obstacles catch us. That's okay.",
-    foggy:"Running foggy is hard. You still made it this far.",
-    stuck:"Starting when stuck takes courage. You showed up."
-  };
-  var bs = state.lastSnap || "flow";
-  var box = document.getElementById("crashContent");
-  box.innerHTML =
-    '<div style="font-size:72px">💥</div>' +
-    '<div style="font-family:Orbitron,sans-serif;font-size:26px;font-weight:900;color:#ff6b6b">YOU CRASHED</div>' +
-    '<div style="font-size:13px;color:#6b7fa8;max-width:280px;line-height:1.7">' + Math.floor(state.distance) + 'm &middot; +' + state._crashEarned + ' XP &mdash; ' + msgs[bs] + '</div>' +
-    '<div style="background:#111828;border-radius:20px;padding:18px;max-width:290px;border:1px solid #ffffff15;margin:4px 0">' +
-      '<div style="font-family:Orbitron,sans-serif;font-size:10px;color:#fbbf24;letter-spacing:3px;margin-bottom:10px">BEFORE YOU RUN AGAIN</div>' +
-      '<div style="font-size:14px;color:#e8f0ff;line-height:1.8">Crashes happen to everyone.<br>Let\'s check in with your brain first.</div>' +
-    '</div>' +
-    '<button id="goCheckInBtn" style="background:linear-gradient(135deg,#38bdf8,#818cf8);border:none;border-radius:16px;color:#fff;font-family:Orbitron,sans-serif;font-size:15px;font-weight:700;padding:16px 40px;cursor:pointer;width:100%;max-width:280px">CHECK IN 🧠</button>';
-  document.getElementById("goCheckInBtn").onclick = showCrashStep2;
-}
-
-function showCrashStep2() {
-  var allWords = [
-    {word:"ELECTRIC",state:"rocket"},{word:"HYPER",state:"rocket"},{word:"WIRED",state:"buzz"},
-    {word:"BUZZING",state:"buzz"},{word:"FIRED UP",state:"buzz"},{word:"FOCUSED",state:"flow"},
-    {word:"CALM",state:"flow"},{word:"GOOD",state:"flow"},{word:"ANXIOUS",state:"buzz"},
-    {word:"FOGGY",state:"foggy"},{word:"TIRED",state:"foggy"},{word:"FLAT",state:"stuck"},
-    {word:"FROZEN",state:"stuck"},{word:"OKAY",state:"flow"},{word:"RESTLESS",state:"buzz"}
-  ];
-  var picked = allWords.sort(function(){return Math.random()-0.5;}).slice(0,9);
-  var box = document.getElementById("crashContent");
-  box.innerHTML =
-    '<div style="font-family:Orbitron,sans-serif;font-size:12px;color:#fbbf24;letter-spacing:4px">RIGHT NOW I FEEL...</div>' +
-    '<div style="font-size:13px;color:#6b7fa8;margin-bottom:4px">Tap the word that fits</div>' +
-    '<div id="wordGrid" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:340px"></div>';
-  var grid = document.getElementById("wordGrid");
-  picked.forEach(function(item) {
-    var btn = document.createElement("button");
-    btn.textContent = item.word;
-    btn.style.cssText = "background:#111828;border:2px solid #ffffff25;border-radius:99px;color:#e8f0ff;font-family:Orbitron,sans-serif;font-size:13px;font-weight:700;padding:14px 18px;cursor:pointer;min-width:100px;";
-    btn.onclick = function(){ showCrashStep3(item); };
-    grid.appendChild(btn);
+function showSnapQ(qIdx){
+  if(qIdx>=SNAP_QUESTIONS.length){
+    // All 3 answered — analyse and show biome
+    finishDiagnostic();
+    return;
+  }
+  const q=SNAP_QUESTIONS[qIdx];
+  const box=document.getElementById('regulateContent');
+  box.innerHTML=
+    '<div style="font-family:Orbitron,sans-serif;font-size:11px;color:#fbbf24;letter-spacing:4px;margin-bottom:4px">QUESTION '+(qIdx+1)+' OF 3</div>'+
+    '<div style="font-family:Orbitron,sans-serif;font-size:16px;font-weight:900;color:#e8f0ff;text-align:center;line-height:1.5;margin-bottom:8px">'+q.q+'</div>'+
+    '<div style="font-size:12px;color:#6b7fa8;margin-bottom:12px">Tap fast — first instinct wins</div>'+
+    '<div id="snapGrid" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:340px;"></div>';
+  const grid=document.getElementById('snapGrid');
+  q.options.sort(()=>Math.random()-.5).forEach(opt=>{
+    const b=document.createElement('button');
+    b.textContent=opt.word;
+    b.style.cssText='background:#111828;border:2px solid #ffffff20;border-radius:99px;color:#e8f0ff;font-family:Orbitron,sans-serif;font-size:13px;font-weight:700;padding:13px 16px;cursor:pointer;min-width:110px;';
+    b.onclick=()=>answerSnap(opt,qIdx);
+    grid.appendChild(b);
   });
 }
 
-function showCrashStep3(item) {
-  state.lastSnap = item.state;
-  var biome = BIOMES[item.state];
-  var adaptMap = {rocket:"flow",buzz:"flow",flow:"flow",foggy:"buzz",stuck:"buzz"};
-  state.biome = adaptMap[item.state] || "flow";
-  var bonusXP = 25;
-  state.xp += bonusXP;
-  var box = document.getElementById("crashContent");
-  box.innerHTML =
-    '<div style="font-size:52px">' + biome.emoji + '</div>' +
-    '<div style="font-family:Orbitron,sans-serif;font-size:18px;font-weight:900;color:' + biome.color + '">' + biome.name + '</div>' +
-    '<div style="background:#111828;border-radius:20px;padding:18px;max-width:300px;border:1px solid #ffffff15;font-size:14px;color:#94a3b8;line-height:1.8">' + INSIGHTS[item.state] + '</div>' +
-    '<div style="font-family:Orbitron,sans-serif;font-size:12px;color:#fbbf24">+' + ((state._crashEarned||0)+bonusXP) + ' XP &middot; Check-in bonus +' + bonusXP + ' XP 🎉</div>' +
-    '<button id="goRetryBtn" style="background:linear-gradient(135deg,#38bdf8,#818cf8);border:none;border-radius:16px;color:#fff;font-family:Orbitron,sans-serif;font-size:15px;font-weight:700;padding:16px 40px;cursor:pointer;width:100%;max-width:280px">RUN AGAIN ⚡</button>' +
-    '<button id="goMenuBtn" style="background:transparent;border:2px solid #38bdf850;border-radius:12px;color:#38bdf8;font-family:Nunito,sans-serif;font-size:14px;font-weight:700;padding:10px 28px;cursor:pointer;width:100%;max-width:280px">Main Menu</button>';
-  document.getElementById("goRetryBtn").onclick = function(){ startGame(); };
-  document.getElementById("goMenuBtn").onclick  = function(){ showScreen("title"); document.getElementById("hud").classList.add("hidden"); };
+function answerSnap(opt,qIdx){
+  snapAnswers.push(opt);
+  // add to scores
+  Object.entries(opt.score||{}).forEach(([k,v])=>{G.snapScores[k]=(G.snapScores[k]||0)+v;});
+  // flash selected
+  showSnapQ(qIdx+1);
 }
 
-/* ═══════════════════════════════════════
-   GAME START / RESUME / RESET
-function startGame() {
-  hero.x = HERO_X;
-  hero.y = GROUND_Y - hero.h;
-  hero.vy = 0; hero.vx = 0;
-  hero.onGround = true;
-  hero.jumping = false;
-  hero.sliding = false;
-  hero.crashed = false;
-  hero.invincible = 0;
-  hero.jumpCount = 0;
-  hero.trailParticles = [];
-
-  obstacles = [];
-  burstParticles = [];
-  obstacleCooldown = 150;
-  gate = null;
-
-  state.running = true;
-  state.distance = 0;
-  state.sessionXP = 0;
-  state.nextCheckpoint = 600;
-  state.checkpointDist = 500;
-  state.snapCount = 0;
-  state.lastSnap = null;
-  state.biome = "flow";
-  state.speed = 5;
-
-  // Set initial HUD state
-  const hudState = document.getElementById("hudState");
-  hudState.textContent = "🌊 FLOW";
-  hudState.style.color = "#2de8cc";
-  hudState.style.background = "#2de8cc20";
-  hudState.style.border = "1px solid #2de8cc40";
-
-  showScreen("game");
-  document.getElementById("hud").classList.remove("hidden");
-
-  initBGLayers();
-  lastTime = performance.now();
-  animId = requestAnimationFrame(gameLoop);
-}
-
-function resumeGame() {
-  showScreen("game");
-  // Clear any obstacles that built up off-screen, give breathing room
-  obstacles = obstacles.filter(obs => obs.x > 0 && obs.x < W + 200);
-  obstacleCooldown = 100;
-  hero.invincible = 60;
-  state.running = true;
-  lastTime = performance.now();
-  animId = requestAnimationFrame(gameLoop);
-}
-
-function addSessionXP(amount) {
-  state.sessionXP += amount;
-  showFloatingXP("+" + amount + " XP");
-}
-
-let toastTimeout = null;
-function showToast(msg) {
-  let t = document.getElementById("gameToast");
-  if (!t) {
-    t = document.createElement("div");
-    t.id = "gameToast";
-    t.style.cssText = `position:absolute;top:80px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#2de8cc,#818cf8);border-radius:99px;padding:8px 20px;font-family:Orbitron;font-size:12px;font-weight:700;color:#fff;z-index:50;pointer-events:none;white-space:nowrap;`;
-    document.getElementById("app").appendChild(t);
-  }
-  t.textContent = msg;
-  t.style.opacity = "1";
-  clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(()=>{ t.style.opacity="0"; }, 2000);
-}
-
-function showFloatingXP(msg) {
-  const el = document.createElement("div");
-  el.style.cssText = `position:absolute;left:${W/2-30}px;top:${H/2}px;font-family:Orbitron;font-size:18px;color:#fbbf24;font-weight:900;pointer-events:none;z-index:50;animation:floatUp 1.2s ease forwards;`;
-  el.textContent = msg;
-  document.getElementById("app").appendChild(el);
-  setTimeout(()=>el.remove(), 1300);
-}
-
-/* ═══════════════════════════════════════
-   SCREEN MANAGEMENT
-═══════════════════════════════════════ */
-function showScreen(name) {
-  document.getElementById("titleScreen").classList.add("hidden");
-  document.getElementById("snapScreen").classList.add("hidden");
-  document.getElementById("breatheScreen").classList.add("hidden");
-  document.getElementById("gameoverScreen").classList.add("hidden");
-
-  if (name !== "game") {
-    document.getElementById(name + "Screen").classList.remove("hidden");
-    document.getElementById("hud").classList.add("hidden");
-    document.getElementById("ctrlOverlay").classList.add("hidden");
-    document.getElementById("jumpBtn").style.display = "none";
-    document.getElementById("slideBtn").style.display = "none";
+function finishDiagnostic(){
+  const state=analyseDiagnostic();
+  G.detectedState=state;
+  const bs=BRAIN_STATES[state];
+  currentBiome=bs.biome;
+  // Show regulation tool first if needed
+  if(bs.regulation!=='none'){
+    showRegTool(bs.regulation, ()=>showBiomeIntro(bs.biome));
   } else {
-    document.getElementById("hud").classList.remove("hidden");
-    document.getElementById("ctrlOverlay").classList.remove("hidden");
-    document.getElementById("jumpBtn").style.display = "block";
-    document.getElementById("slideBtn").style.display = "block";
+    showBiomeIntro(bs.biome);
   }
 }
 
-/* ═══════════════════════════════════════
-   TITLE SCREEN ANIMATION
-═══════════════════════════════════════ */
-const titleCanvas = document.getElementById("titleCanvas");
-const tctx = titleCanvas.getContext("2d");
-const titleStars = Array.from({length:150},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5+0.3,twinkle:Math.random()*Math.PI*2,speed:Math.random()*0.02+0.01}));
-const titleHero = {x:-60, y:GROUND_Y-80, vx:4};
-
-function animateTitle() {
-  tctx.clearRect(0,0,W,H);
-
-  // BG
-  const grad = tctx.createLinearGradient(0,0,0,H);
-  grad.addColorStop(0,"#04060f");
-  grad.addColorStop(0.5,"#040d1e");
-  grad.addColorStop(1,"#040810");
-  tctx.fillStyle = grad;
-  tctx.fillRect(0,0,W,H);
-
-  // Stars
-  titleStars.forEach(s=>{
-    s.twinkle += s.speed;
-    const a = 0.3 + Math.sin(s.twinkle)*0.4;
-    tctx.globalAlpha = a;
-    tctx.fillStyle = "#fff";
-    tctx.beginPath();
-    tctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-    tctx.fill();
-    tctx.globalAlpha = 1;
+function showQuickRegulate(){
+  // Quick 1-question check-in after crash
+  const q=SNAP_QUESTIONS[Math.floor(Math.random()*SNAP_QUESTIONS.length)];
+  const box=document.getElementById('regulateContent');
+  box.innerHTML=
+    '<div style="font-size:52px;margin-bottom:4px">💥</div>'+
+    '<div style="font-family:Orbitron,sans-serif;font-size:22px;font-weight:900;color:#ff6b6b;margin-bottom:8px">CRASHED</div>'+
+    '<div style="font-size:13px;color:#6b7fa8;margin-bottom:16px">Quick check — '+q.q.toLowerCase()+'</div>'+
+    '<div id="snapGrid" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:340px;margin-bottom:16px"></div>';
+  const grid=document.getElementById('snapGrid');
+  q.options.sort(()=>Math.random()-.5).slice(0,6).forEach(opt=>{
+    const b=document.createElement('button');
+    b.textContent=opt.word;
+    b.style.cssText='background:#111828;border:2px solid #ffffff20;border-radius:99px;color:#e8f0ff;font-family:Orbitron,sans-serif;font-size:13px;font-weight:700;padding:13px 16px;cursor:pointer;min-width:110px;';
+    b.onclick=()=>{
+      Object.entries(opt.score||{}).forEach(([k,v])=>{G.snapScores[k]=(G.snapScores[k]||0)+v;});
+      // offer regulation then back to game
+      const newState=analyseDiagnostic();
+      const bs=BRAIN_STATES[newState];
+      if(bs.regulation!=='none'&&Math.random()>.4){
+        showRegTool(bs.regulation,()=>resumeAfterCrash());
+      } else {
+        resumeAfterCrash();
+      }
+    };
+    grid.appendChild(b);
   });
-
-  // Moving hero on title
-  titleHero.x += titleHero.vx;
-  if (titleHero.x > W + 60) titleHero.x = -60;
-
-  // Hero trail
-  tctx.save();
-  for(let i=0;i<8;i++){
-    const tx = titleHero.x - i*12;
-    tctx.globalAlpha = (1 - i/8) * 0.5;
-    tctx.fillStyle = "#38bdf8";
-    tctx.shadowBlur = 10;
-    tctx.shadowColor = "#38bdf8";
-    tctx.beginPath();
-    tctx.ellipse(tx+8, titleHero.y+28, 8-i, 4, 0, 0, Math.PI*2);
-    tctx.fill();
-  }
-
-  // Hero body
-  tctx.globalAlpha = 1;
-  tctx.fillStyle = "#38bdf8";
-  tctx.shadowBlur = 25;
-  tctx.shadowColor = "#38bdf8";
-  tctx.beginPath();
-  rrect(tctx, titleHero.x+4, titleHero.y+18, 28, 38, 5);
-  tctx.fill();
-  tctx.fillStyle = "#0d1535";
-  tctx.beginPath();
-  tctx.ellipse(titleHero.x+18, titleHero.y+12, 14, 13, 0, 0, Math.PI*2);
-  tctx.fill();
-  tctx.fillStyle = "#38bdf8";
-  tctx.beginPath();
-  tctx.ellipse(titleHero.x+18, titleHero.y+13, 10, 9, 0, 0, Math.PI*2);
-  tctx.fill();
-  // Lightning bolt
-  tctx.fillStyle = "#fff";
-  tctx.shadowColor = "#fbbf24";
-  tctx.beginPath();
-  tctx.moveTo(titleHero.x+18, titleHero.y+24);
-  tctx.lineTo(titleHero.x+13, titleHero.y+32);
-  tctx.lineTo(titleHero.x+17, titleHero.y+32);
-  tctx.lineTo(titleHero.x+15, titleHero.y+40);
-  tctx.lineTo(titleHero.x+22, titleHero.y+30);
-  tctx.lineTo(titleHero.x+18, titleHero.y+30);
-  tctx.lineTo(titleHero.x+21, titleHero.y+24);
-  tctx.closePath();
-  tctx.fill();
-  tctx.restore();
-
-  // Ground
-  tctx.strokeStyle = "#38bdf830";
-  tctx.lineWidth = 2;
-  tctx.beginPath();
-  tctx.moveTo(0, GROUND_Y);
-  tctx.lineTo(W, GROUND_Y);
-  tctx.stroke();
-
-  requestAnimationFrame(animateTitle);
 }
-animateTitle();
 
-/* ═══════════════════════════════════════
-   INPUT HANDLING — SIMPLE & RELIABLE
-═══════════════════════════════════════ */
+function resumeAfterCrash(){
+  obstacles=[];obsCooldown=120;
+  resetHero();hero.invincible=80;
+  showScreen('game');
+  G.running=true;
+  lastTime=performance.now();
+  animId=requestAnimationFrame(gameLoop);
+}
 
-// Tap anywhere on left 2/3 = JUMP, right 1/3 = SLIDE
-document.getElementById("app").addEventListener("touchstart", e=>{
-  if (!state.running) return;
-  e.preventDefault();
-  const x = e.touches[0].clientX;
-  const screenW = window.innerWidth;
-  if (x > screenW * 0.67) {
-    hero.slide();
+/* ========================================
+   REGULATION TOOLS UI
+======================================== */
+function showRegTool(toolId, onDone){
+  const tool=REG_TOOLS[toolId];
+  if(!tool){onDone();return;}
+  const box=document.getElementById('regulateContent');
+  box.innerHTML=
+    '<div style="font-size:52px">'+tool.emoji+'</div>'+
+    '<div style="font-family:Orbitron,sans-serif;font-size:16px;color:'+tool.color+';letter-spacing:2px">'+tool.title+'</div>'+
+    '<div style="background:#111828;border-radius:16px;padding:16px;max-width:300px;font-size:13px;color:#94a3b8;line-height:1.8;text-align:center;border:1px solid #ffffff10">'+tool.desc+'</div>'+
+    '<div id="regExercise" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;"></div>'+
+    '<button id="regSkip" style="background:transparent;border:1px solid #ffffff20;border-radius:99px;color:#6b7fa8;font-family:Nunito,sans-serif;font-size:12px;padding:8px 20px;cursor:pointer;margin-top:4px;">Skip (-15 XP)</button>';
+  document.getElementById('regSkip').onclick=()=>{G.sessionXP=Math.max(0,G.sessionXP-15);onDone();};
+  if(tool.phases)runBreathe(tool,onDone);
+  else if(tool.duration)runShake(tool,onDone);
+  else if(tool.count)runCount(tool,onDone);
+}
+
+function runBreathe(tool,onDone){
+  let phaseIdx=0,count=tool.phases[0].d,cycles=0;
+  const el=document.getElementById('regExercise');
+  let iv=null;
+  function render(){
+    const ph=tool.phases[phaseIdx];
+    const colors={IN:'#2de8cc',HOLD:'#fbbf24',OUT:'#818cf8','BREATHE IN':'#2de8cc','ROAR OUT':'#ff6b6b'};
+    const col=colors[ph.l]||tool.color;
+    const scale=ph.l==='IN'||ph.l==='BREATHE IN'||ph.l==='HOLD'?1.25:1;
+    el.innerHTML=
+      '<div style="font-size:11px;color:#6b7fa8;font-family:Orbitron,sans-serif;letter-spacing:2px">CYCLE '+(cycles+1)+'/'+tool.cycles+'</div>'+
+      '<div style="width:130px;height:130px;border-radius:50%;border:3px solid '+col+';background:radial-gradient(circle,'+col+'20,transparent);display:flex;align-items:center;justify-content:center;box-shadow:0 0 40px '+col+'40;transform:scale('+scale+');transition:all '+(ph.d*.9)+'s ease;">'+
+        '<div style="font-family:Orbitron,sans-serif;font-size:44px;font-weight:900;color:'+col+'">'+count+'</div>'+
+      '</div>'+
+      '<div style="font-family:Orbitron,sans-serif;font-size:14px;color:'+col+';letter-spacing:3px">'+ph.l+'</div>'+
+      '<div style="display:flex;gap:6px;">'+Array.from({length:tool.cycles},(_,i)=>'<div style="width:10px;height:10px;border-radius:50%;background:'+(i<cycles?tool.color:'#111828')+';border:1px solid '+tool.color+'40;"></div>').join('')+'</div>';
+  }
+  render();
+  iv=setInterval(()=>{
+    count--;
+    if(count<=0){
+      phaseIdx=(phaseIdx+1)%tool.phases.length;
+      if(phaseIdx===0){cycles++;if(cycles>=tool.cycles){clearInterval(iv);G.sessionXP+=tool.xp;toast('+'+tool.xp+' XP 💨');setTimeout(onDone,600);return;}}
+      count=tool.phases[phaseIdx].d;
+    }
+    render();
+  },1000);
+}
+
+function runShake(tool,onDone){
+  let secs=tool.duration;
+  const el=document.getElementById('regExercise');
+  el.innerHTML='<div style="font-family:Orbitron,sans-serif;font-size:52px;font-weight:900;color:'+tool.color+'">'+secs+'</div><div style="font-family:Orbitron,sans-serif;font-size:12px;color:'+tool.color+';letter-spacing:3px">SHAKE IT OUT</div>';
+  const iv=setInterval(()=>{
+    secs--;
+    const num=el.querySelector('div');
+    if(num)num.textContent=secs;
+    if(secs<=0){clearInterval(iv);G.sessionXP+=tool.xp;toast('+'+tool.xp+' XP 🫨');setTimeout(onDone,600);}
+  },1000);
+}
+
+function runCount(tool,onDone){
+  let n=0;
+  const el=document.getElementById('regExercise');
+  function render(){
+    el.innerHTML=
+      '<div style="width:130px;height:130px;border-radius:50%;border:3px solid '+tool.color+';background:radial-gradient(circle,'+tool.color+'15,transparent);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 30px '+tool.color+'30;" id="countBtn">'+
+        '<div style="font-family:Orbitron,sans-serif;font-size:48px;font-weight:900;color:'+tool.color+'">'+(n>=tool.count?'✓':n)+'</div>'+
+        (n<tool.count?'<div style="font-size:10px;color:#6b7fa8;font-family:Orbitron">TAP</div>':'')+
+      '</div>'+
+      '<div style="width:200px;background:#111828;border-radius:99px;height:6px;overflow:hidden;"><div style="height:100%;width:'+(n/tool.count*100)+'%;background:linear-gradient(90deg,'+tool.color+',#2de8cc);border-radius:99px;"></div></div>';
+    const btn=document.getElementById('countBtn');
+    if(btn&&n<tool.count)btn.onclick=()=>{n++;if(n>=tool.count){G.sessionXP+=tool.xp;toast('+'+tool.xp+' XP ⭐');setTimeout(onDone,800);}else render();};
+  }
+  render();
+}
+
+/* ========================================
+   BIOME INTRO SCREEN
+======================================== */
+function showBiomeIntro(biomeId){
+  const b=BIOMES[biomeId];
+  const bs=G.detectedState?BRAIN_STATES[G.detectedState]:null;
+  document.getElementById('biomeEmoji').textContent=b.emoji;
+  document.getElementById('biomeName').textContent=b.name;
+  document.getElementById('biomeName').style.color=b.color;
+  document.getElementById('biomeDesc').innerHTML=
+    (bs?'<div style="font-family:Orbitron,sans-serif;font-size:11px;color:'+bs.color+';letter-spacing:2px;margin-bottom:8px">'+bs.emoji+' '+bs.label+'</div>'+
+    '<div style="font-size:13px;color:#e8f0ff;line-height:1.7;margin-bottom:10px">'+bs.desc+'</div>':'')+
+    '<div style="font-size:13px;color:#94a3b8;line-height:1.7;">'+b.desc+'</div>';
+  document.getElementById('biomeStrategy').innerHTML='<div style="font-size:13px;color:#e8f0ff;line-height:1.7;">'+b.strategy+'</div>';
+  document.getElementById('biomeBtn').style.background='linear-gradient(135deg,'+b.color+','+b.color+'80)';
+  currentBiome=biomeId;
+  showScreen('sBiomeIntro');
+}
+
+/* ========================================
+   START GAME
+======================================== */
+function startDiagnostic(){
+  showScreen('sDiagIntro');
+}
+
+function beginDiagnosticRun(){
+  G.biome='diagnostic';
+  G.diagData={reactionTimes:[],jumpCount:0,doubleJumps:0,slideCount:0,firstCrashDist:0};
+  G.snapScores={hyperactive:0,anxious:0,foggy:0,frustrated:0,regulated:0};
+  G.snapCount=0;G.crashCount=0;G.detectedState=null;
+  startGame('diagnostic');
+}
+
+function launchBiome(){
+  startGame(currentBiome);
+}
+
+function startGame(biomeId){
+  G.biome=biomeId||currentBiome||'flow';
+  currentBiome=G.biome;
+  G.running=true;
+  G.distance=0;G.speed=BIOMES[G.biome].baseSpeed;
+  G.nextCP=600;G.cpGap=600;G.snapCount=0;G.sessionXP=0;
+  obstacles=[];obsCooldown=140;particles=[];
+  resetHero();
+  // HUD
+  const b=BIOMES[G.biome];
+  const hs=document.getElementById('hudState');
+  hs.textContent=b.label;hs.style.color=b.color;hs.style.background=b.color+'20';hs.style.borderColor=b.color+'40';
+  showScreen('game');
+  lastTime=performance.now();
+  animId=requestAnimationFrame(gameLoop);
+}
+
+/* ========================================
+   SHOW SCREEN
+======================================== */
+function showScreen(id){
+  ['sTitle','sDiagIntro','sSnap','sBiomeIntro','sRegulate','sInsight'].forEach(s=>{
+    document.getElementById(s).classList.add('hidden');
+  });
+  document.getElementById('hud').classList.add('hidden');
+  if(id==='game'){
+    document.getElementById('hud').classList.remove('hidden');
+    document.getElementById('jumpZone').style.display='block';
+    document.getElementById('slideZone').style.display='block';
   } else {
-    hero.jump();
+    document.getElementById('jumpZone').style.display='none';
+    document.getElementById('slideZone').style.display='none';
+    if(id!=='game')document.getElementById(id).classList.remove('hidden');
   }
-}, {passive:false});
+}
 
-// Keyboard fallback
-document.addEventListener("keydown", e=>{
-  if (!state.running) return;
-  if (e.code==="Space"||e.code==="ArrowUp") { e.preventDefault(); hero.jump(); }
-  if (e.code==="ArrowDown") { e.preventDefault(); hero.slide(); }
+function goTitle(){showScreen('sTitle');}
+
+/* ========================================
+   TOAST
+======================================== */
+let toastTO=null;
+function toast(msg){
+  let t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;top:22px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#2de8cc,#818cf8);border-radius:99px;padding:9px 22px;font-family:Orbitron,sans-serif;font-size:12px;font-weight:700;color:#fff;z-index:99;pointer-events:none;white-space:nowrap;';document.getElementById('app').appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(toastTO);toastTO=setTimeout(()=>{t.style.opacity='0';},2200);
+}
+
+function showHow(){alert('SPARK RUNNER\n\nLEFT side = JUMP (double tap = double jump)\nRIGHT side = SLIDE under lasers\n\nThe game reads your brain through how you play.\nAfter each crash, quick check-in questions adapt the game to your brain state.\n\nFeel the difference between Volcano World, Ocean World, Fog World and Flow State.');}
+
+/* ========================================
+   TOUCH INPUT
+======================================== */
+// Create tap zones
+const jz=document.createElement('div');jz.id='jumpZone';
+jz.style.cssText='position:absolute;left:0;top:0;width:67%;height:100%;z-index:16;display:none;';
+const sz=document.createElement('div');sz.id='slideZone';
+sz.style.cssText='position:absolute;right:0;top:0;width:33%;height:100%;z-index:16;display:none;';
+document.getElementById('app').appendChild(jz);
+document.getElementById('app').appendChild(sz);
+
+jz.addEventListener('touchstart',e=>{e.preventDefault();if(G.running)hero.jump();},{passive:false});
+sz.addEventListener('touchstart',e=>{e.preventDefault();if(G.running)hero.slide();},{passive:false});
+
+document.addEventListener('keydown',e=>{
+  if(!G.running)return;
+  if(e.code==='Space'||e.code==='ArrowUp'){e.preventDefault();hero.jump();}
+  if(e.code==='ArrowDown'){e.preventDefault();hero.slide();}
 });
 
-/* ═══════════════════════════════════════
-
-/* ═══════════════════════════════════════
-   BUTTON HANDLERS
-═══════════════════════════════════════ */
-document.getElementById("startBtn").onclick = function(){ startGame(); };
-document.getElementById("startBtn").addEventListener("touchend", function(e){ e.preventDefault(); startGame(); }, {passive:false});
-document.getElementById("jumpBtn").addEventListener("touchstart", function(e){ e.preventDefault(); if(state.running) hero.jump(); }, {passive:false});
-document.getElementById("slideBtn").addEventListener("touchstart", function(e){ e.preventDefault(); if(state.running) hero.slide(); }, {passive:false});
-document.getElementById("howBtn").onclick = function(){
-  alert("SPARK RUNNER\n\nLEFT side = JUMP\nRIGHT side = SLIDE\n\nEvery 600m a snap check-in adapts your world.\nWARP GATES = breathing +30 XP.\nCrash = check in before running again.");
-};
-document.getElementById("breatheSkip").onclick = function(){
-  clearInterval(breatheInterval);
-  showToast("Skipped (-20 XP)");
-  resumeGame();
-};
-/* ═══════════════════════════════════════
-   GLOBAL CSS ANIM INJECTION
-═══════════════════════════════════════ */
-const style = document.createElement("style");
-style.textContent = `
-  @keyframes floatUp {
-    from { opacity:1; transform:translateY(0); }
-    to   { opacity:0; transform:translateY(-60px); }
+// Update HUD
+setInterval(()=>{
+  if(G.running){
+    document.getElementById('hudXP').textContent='⚡ '+(G.totalXP+G.sessionXP)+' XP';
+    document.getElementById('hudDist').textContent=Math.floor(G.distance)+'m';
   }
-  @keyframes crashBounce {
-    0%   { transform:scale(0.3) rotate(-20deg); opacity:0; }
-    60%  { transform:scale(1.2) rotate(10deg); opacity:1; }
-    100% { transform:scale(1) rotate(0deg); }
-  }
-`;
-document.head.appendChild(style);
+},200);
 
-});
+}); // end window.load
 </script>
-
 </body>
 </html>
