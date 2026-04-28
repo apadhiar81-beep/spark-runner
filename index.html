@@ -86,7 +86,7 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
     <div class="orb" style="font-size:14px;color:#fbbf24;letter-spacing:3px;">BRAIN INSIGHT</div>
     <div class="card" style="text-align:center;" id="insightText"></div>
     <div class="card" style="border-color:#2de8cc30;text-align:center;" id="insightXP"></div>
-    <button class="btn btn-primary" onclick="startGame(currentBiome)">RUN AGAIN ⚡</button>
+    <button class="btn btn-primary" onclick="window.launchBiome()">RUN AGAIN ⚡</button>
     <button class="btn btn-secondary" onclick="goTitle()">Main Menu</button>
   </div>
 
@@ -945,6 +945,15 @@ setInterval(()=>{
     document.getElementById('hudDist').textContent=Math.floor(G.distance)+'m';
   }
 },200);
+
+/* Expose to global for HTML onclick */
+window.startDiagnostic   = startDiagnostic;
+window.showHow           = showHow;  
+window.beginDiagnosticRun= beginDiagnosticRun;
+window.launchBiome       = launchBiome;
+window.startGame         = startGame;
+window.goTitle           = goTitle;
+window.resumeAfterCrash  = resumeAfterCrash;
 
 }); // end window.load
 </script>
